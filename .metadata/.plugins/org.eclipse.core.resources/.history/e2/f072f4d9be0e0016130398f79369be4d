@@ -1,0 +1,6 @@
+package com.bda.realtime;
+
+@ClientEndpoint
+public class WebSocketController {
+
+}

@@ -1,0 +1,12 @@
+package com.bda.realtime;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.websocket.Session;
+
+public class WebSocketServer {
+	//queue holds the list of connected clients
+	 private static Set<Session> sessions = new HashSet<Session>();
+
+}

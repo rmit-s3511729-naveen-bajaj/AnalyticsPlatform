@@ -1,0 +1,13 @@
+package com.bda.realtime;
+
+
+
+/* TODO:
+ * - Exception need to be changed to its own servlet.
+ * */
+public class GuiceConfig extends GuiceServletContextListener {
+    @Override
+    protected Injector getInjector() {
+        return Guice.createInjector(new AgentClientModule("rest"),new RestServletModule());
+    }
+}

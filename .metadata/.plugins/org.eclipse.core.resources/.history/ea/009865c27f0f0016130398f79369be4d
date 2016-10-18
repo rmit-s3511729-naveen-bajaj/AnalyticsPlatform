@@ -1,0 +1,44 @@
+package com.bda.kafka;
+
+public class KafkaMessage {
+	private String message;
+	
+	public KafkaMessage(String message){
+		this.message = message;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	
+	public static class MessageEncoder implements Encoder.Text< KafkaMessage > {
+		@Override
+		public void init( final EndpointConfig config ) {
+		}
+
+
+
+
+		@Override
+		public String encode( final KafkaMessage message ) throws EncodeException {
+		return Json.createObjectBuilder()
+		
+		.add( "message", message.getMessage() )
+		.build()
+		.toString();
+		}
+
+
+
+
+		@Override
+		public void destroy() {
+		}
+		}
+		
+
+}

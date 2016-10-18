@@ -1,0 +1,129 @@
+
+<div>
+	<div class="row">
+		<div class="col-lg-12">
+			<h3 class="page-header">
+				<a ui-sref="app.chart" href="">Charts</a> > addChart <a
+					class="btn btn-success pull-right" ng-click="plotChart()"> <i
+					class="fa fa-save append-icon"></i> Plot
+				</a><a class="btn btn-success pull-right" ng-click="addToDashboard()">
+					<i class="fa fa-save append-icon"></i> Add to dashboard
+				</a>
+
+			</h3>
+
+		</div>
+		<div class="form-group">
+			<form class="form-horizontal" role="form">
+				<div class="form-group" style="margin-top: 10px;">
+					<label class="col-sm-2">Chart Name:</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control"
+							placeholder="Enter Chart Name" ng-model="addChart.name">
+					</div>
+
+					<label class="col-sm-2">DataSource Name:</label>
+					<div class="col-sm-4">
+						<select class="form-control column" ng-model="addChart.dsName"
+							ng-change="updateTables(addChart.dsName)">
+							<option selected value="">Select datasources</option>
+							<option ng-repeat="item in allDatasources" value="{{item.name}}">{{item.name}}</option>
+						</select>
+
+					</div>
+				</div>
+				<div class="form-group" style="margin-top: 10px;">
+					<div
+						class="chartpanel leftchartpanel col-md-12 col-sm-12 col-xs-12 panel list-group">
+						<div ng-repeat="item in tableColumns">
+							<a ng-cloak ng-model="table" ng-click="getColumns(item.title)"
+								href="" class="list-group-item" data-toggle="collapse"
+								data-target="#{{ item.title }}" data-parent="#menu">{{
+								item.title }} <span ng-hide="columns.length==0"
+								class="label label-info">{{ item.columns.length }}</span>
+							</a>
+							<div id="{{ item.title }}" class="sublinks collapse">
+								<a ng-cloak class="list-group-item small"
+									ng-repeat="column in item.columns" ng-drag="true"
+									ng-drag-data="getdragData(item.title,column)"
+									data-allow-transform="true"><span
+									class="glyphicon glyphicon-chevron-right"></span>{{ column }}</a>
+							</div>
+						</div>
+					</div>
+					<div ng-drag-clone="">{{clonedData}}</div>
+					<table class="chartparams">
+						<tr>
+							<td>
+								<div class="axis dimension" ng-drop="true"
+									ng-drop-success="onXDropComplete($data,$event)">
+									<span>Dimensions</span>
+									<div class="dimensionclass" ng-cloak
+										ng-repeat="dmodel in dimensions">
+										<input type="text" id="{{ dmodel }}" value="{{ dmodel }}" />
+										<i class="fa fa-close headericons"
+											ng-click="removeDimension(dmodel)"></i>
+									</div>
+								</div>
+							</td>
+							<td rowspan="2">
+								<div class="axis">
+									<span>Types</span>
+									<table class="chartTypesImage">
+										<tr>
+											<td><img class="active"
+												ng-click="typesSelected('discretebar')"
+												src="resources/images/charts/xyaxis_bar.JPG"
+												id="discretebar"></td>
+											<td><img ng-click="typesSelected('horizontalbar')"
+												src="resources/images/charts/horizontalbar.JPG"
+												id="horizontalbar"></td>
+										</tr>
+										<tr>
+											<td><img ng-click="typesSelected('multiline')"
+												src="resources/images/charts/multiline.JPG" id="multiline"></td>
+											<td><img ng-click="typesSelected('pie')"
+												src="resources/images/charts/pie.JPG" id="pie"></td>
+										</tr>
+										<tr>
+											<td><img ng-click="typesSelected('donut')"
+												src="resources/images/charts/donut.JPG" id="donut"></td>
+
+										</tr>
+									</table>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="axis dimension" ng-drop="true"
+									ng-drop-success="onYDropComplete($data,$event)">
+									<span>Expression</span>
+									<div class="dimensionclass" ng-cloak
+										ng-repeat="emodel in expressions">
+										<select ng-model="emodel.aggregate" class="form-control">
+											<option ng-selected="emodel.aggregate == agg" ng-bind="agg"
+												ng-cloak ng-repeat="agg in aggregateMethods"
+												value="{{ agg }}">{{ agg }}</option>
+										</select> <input type="text" id="{{ emodel.expField }}"
+											value="{{ emodel.expField }}" /> <i
+											class="fa fa-close headericons"
+											ng-click="removeExpression(emodel)"></i>
+									</div>
+								</div>
+							</td>
+						</tr>
+						</table>
+				</div>
+			</form>
+		</div>
+
+		<div ng-if="stats == 'chart'" class="chartDiv chartpage">
+			<div ng-show="errorIndicator == 'true'" class="errorMessage">{{
+				error_Message }}</div>
+			<nvd3 ng-show="errorIndicator == 'false'" ng-if="chartType != 'geo'"
+				options="options" data="data"></nvd3>
+		</div>
+
+	</div>
+</div>

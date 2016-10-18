@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="javax.websocket.server.ServerEndpoint"/>
+<fullyQualifiedTypeName name="javax.websocket.ClientEndpoint"/>
+<fullyQualifiedTypeName name="kafka.message.ByteBufferMessageSet"/>
+<fullyQualifiedTypeName name="kafka.javaapi.message.ByteBufferMessageSet"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.server.Server"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.server.handler.DefaultHandler"/>
+<fullyQualifiedTypeName name="com.bda.realtime.WebSocketServer"/>
+<fullyQualifiedTypeName name="com.bda.realtime.AdvancedStreamSocketCreator"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.servlet.DefaultServlet"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.servlet.ServletHolder"/>
+<fullyQualifiedTypeName name="java.util.logging.Logger"/>
+<fullyQualifiedTypeName name="com.bda.kafka.KafkaMessage"/>
+<fullyQualifiedTypeName name="javax.websocket.Encoder"/>
+<fullyQualifiedTypeName name="kafka.message.Message"/>
+<fullyQualifiedTypeName name="javax.json.JsonReader"/>
+<fullyQualifiedTypeName name="javax.json.JsonObject"/>
+<fullyQualifiedTypeName name="javax.json.Json"/>
+<fullyQualifiedTypeName name="javax.websocket.Decoder"/>
+<fullyQualifiedTypeName name="javax.websocket.Session"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.websocket.api.annotations.WebSocket"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.websocket.api.Session"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.websocket.server.WebSocketHandler"/>
+<fullyQualifiedTypeName name="org.eclipse.jetty.server.Handler"/>
+<fullyQualifiedTypeName name="com.bda.kafka.BDAKafkaConsumer"/>
+<fullyQualifiedTypeName name="java.util.Set"/>
+<fullyQualifiedTypeName name="java.util.HashSet"/>
+</qualifiedTypeNameHistroy>

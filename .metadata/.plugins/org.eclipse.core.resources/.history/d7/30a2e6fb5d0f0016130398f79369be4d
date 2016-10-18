@@ -1,0 +1,56 @@
+package com.bda.realtime;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.websocket.CloseReason;
+import javax.websocket.OnClose;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Singleton;
+
+/**
+ * Attempt at creating a simple socket server.
+ */
+
+@Singleton
+@ServerEndpoint(value = "/events")
+public class StreamsSocketServer {
+
+    /**
+     * Log instance.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(StreamsSocketServer.class);
+
+    private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+  
+  
+    
+    @OnOpen
+    public void onOpen(final Session session) {
+        clients.add(session);
+    }
+
+    @OnClose
+    public void onClose(final Session session, final CloseReason closeReason) {
+        clients.remove(session);
+    }
+
+    @OnMessage
+    public String onMessage(final String message, final Session session) {
+
+      
+
+        return message;
+    }
+
+  
+}

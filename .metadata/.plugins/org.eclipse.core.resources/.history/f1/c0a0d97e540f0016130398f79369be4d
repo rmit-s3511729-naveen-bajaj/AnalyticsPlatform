@@ -1,0 +1,16 @@
+package com.futuregrid.platform.rest;
+
+import com.futuregrid.platform.node.configuration.AgentClientModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.servlet.GuiceServletContextListener;
+
+/* TODO:
+ * - Exception need to be changed to its own servlet.
+ * */
+public class GuiceConfig extends GuiceServletContextListener {
+    @Override
+    protected Injector getInjector() {
+        return Guice.createInjector(new RestServletModule());
+    }
+}

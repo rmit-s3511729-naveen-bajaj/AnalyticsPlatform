@@ -1,0 +1,277 @@
+package com.bda.realtime;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.futuregrid.platform.model.DeviceKey;
+import com.futuregrid.platform.model.Timestamped;
+import com.futuregrid.platform.rest.cache.AppClient;
+import com.futuregrid.platform.rest.cache.ClientCache;
+import com.futuregrid.platform.service.application.ApplicationServiceException;
+import com.futuregrid.platform.service.device.Device;
+import com.futuregrid.platform.service.device.DeviceRelation;
+import com.futuregrid.platform.service.device.DeviceRelationType;
+import com.futuregrid.platform.service.device.DeviceService;
+import com.futuregrid.platform.service.store.StoreIterator;
+import com.futuregrid.platform.service.store.StoreService;
+import com.futuregrid.platform.service.store.View;
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+
+
+/**
+ * Created by ericwang on 17/02/2016.
+ */
+@WebSocket
+public class StreamSocket {
+
+
+    private static final Logger LOG = LoggerFactory.getLogger(StreamSocket.class);
+
+    private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+    private Session session;
+
+
+    private ClientCache clientCache;
+
+
+    private final ObjectMapper objectMapper;
+
+    public StreamSocket(ClientCache clientCache) {
+        this.clientCache = clientCache;
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new SimpleModule() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void setupModule(final SetupContext context) {
+                super.setupModule(context);
+
+                // Return special serializer for all objects assignable from Timestamped.
+                context.addBeanSerializerModifier(new BeanSerializerModifier() {
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public JsonSerializer<?> modifySerializer(final SerializationConfig config, final BeanDescription beanDesc, final JsonSerializer<?> serializer) {
+                        if (Timestamped.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                            return new DataJsonSerializer((JsonSerializer<Timestamped>) serializer);
+                        } else if (StoreIterator.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                            return new StreamIteratorJsonSerializer();
+                        } else if (Device.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                            return new DeviceJsonSerializer();
+                        }
+                        return serializer;
+                    }
+                });
+            }
+        });
+
+    }
+
+    // called when the socket connection with the browser is established
+    @OnWebSocketConnect
+    public void handleConnect(Session session) {
+        this.session = session;
+        clients.add(session);
+        LOG.info(session.getRemoteAddress().getHostString() + " connected~~~~~");
+    }
+
+    // called when the connection closed
+    @OnWebSocketClose
+    public void handleClose(int statusCode, String reason) {
+        clients.remove(session);
+        LOG.info("Connection closed with" + session.getRemoteAddress().getHostString() + " statusCode=" + statusCode + ", reason=" + reason);
+    }
+
+    final private Gson gson = new Gson();
+
+    // called when a message received from the browser
+    @OnWebSocketMessage
+    public void handleMessage(String message) throws IOException, ApplicationServiceException {
+        long start = System.currentTimeMillis();
+        // get Object
+        final StreamRequest request = objectMapper.readValue(message, StreamRequest.class);
+        LOG.info("view " + request.getStream() + " " + "source " + request.getDevice() + " " + "start " + request.getStart() + " end" + request.getEnd() + " samples" + request.getSamples());
+        //
+        AppClient app = clientCache.getAppClient(request.getApplicationName());
+        final Device device = ((DeviceService) app.getService("device")).getDevice(request.getDevice());
+        final View storeView = ((StoreService) app.getService("store")).getView(request.getStream(), device);
+
+        String backData = "";
+        if (StringUtils.isNotBlank(request.getChildRelation())) {
+            backData = getScatterResponse(request, storeView, device);
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map tempObj = objectMapper.readValue(backData, Map.class);
+            List<LinkedHashMap> dataArray = (List<LinkedHashMap>) tempObj.get("data");
+            long frequency = 0;
+            for (LinkedHashMap data : dataArray) {
+                // if we want to control frequency by back_end or font_end, we just change it.
+                frequency = Long.parseLong(data.get("frequency").toString());//request.getFrequency();
+
+                List<List> datas = (List<List>) data.get("data");
+                if (datas.size() == 0 && frequency < request.getFrequency()) {
+                    frequency = request.getFrequency();
+                }else{
+                    //update start time
+                    if(datas.size()>0){
+                        long backDataStartTime = (Long)((List)datas.get(0)).get(0);
+                        long newStartTime = backDataStartTime - frequency;
+                        while(request.getStart() <= newStartTime){
+                            newStartTime -= frequency;
+                        }
+                        request.setStart(newStartTime);
+                    }
+
+                }
+
+                long gap = request.getEnd() - request.getStart();
+                int points = (int) ((gap / frequency) + 1);
+                List<List> newDatas = new ArrayList<List>();
+                long startTime = request.getStart();
+                for (int i = 0; i < points; i++) {
+                    long currentTime = startTime + (i * frequency);
+                    boolean flag = false;
+                    for (List item : datas) {
+                        if ((Long) (item.get(0)) == currentTime) {
+                            newDatas.add(item);
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) continue;
+                    List nullItem = new ArrayList();
+                    nullItem.add(currentTime);
+                    Map nullData = new LinkedHashMap();
+                    nullItem.add(nullData);
+                    newDatas.add(nullItem);
+                }
+                data.put("frequency", frequency);
+                data.put("data", newDatas);
+            }
+            tempObj.put("data", dataArray);
+            tempObj.put("start", request.getStart());
+            tempObj.put("end", request.getEnd());
+            tempObj.put("frequency", frequency);
+            backData = gson.toJson(tempObj);
+        } else {
+            View data = storeView.slice(new Date(request.getStart()), new Date(request.getEnd()));
+            if (request.getSamples() > 0) {
+                data = data.sample(request.getSamples());
+            } else {
+                data = data.sample(1000);
+            }
+            final StoreIterator iterator = data.iterator();
+            // if we want to control frequency by back_end or font_end, we just change it.
+            long frequency = iterator.getCollectionFrequency();//request.getFrequency();
+
+            backData = getSingleResponse(request, iterator);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map tempObj = objectMapper.readValue(backData, Map.class);
+            List<List> datas = (List<List>) tempObj.get("data");
+
+            if (datas.size() == 0 && frequency < request.getFrequency()) {
+                frequency = request.getFrequency();
+            }else{
+                //update start time
+                if(datas.size()>0){
+                    long backDataStartTime = (Long)((List)datas.get(0)).get(0);
+                    long newStartTime = backDataStartTime - frequency;
+                    while(request.getStart() <= newStartTime){
+                        newStartTime -= frequency;
+                    }
+                    request.setStart(newStartTime);
+                }
+
+            }
+
+
+            long gap = request.getEnd() - request.getStart();
+            int points = (int) ((gap / frequency) + 1);
+
+            List<List> newDatas = new ArrayList<List>();
+            long startTime = request.getStart();
+            for (int i = 0; i < points; i++) {
+                long currentTime = startTime + (i * frequency);
+                boolean flag = false;
+                for (List item : datas) {
+                    if ((Long) (item.get(0)) == currentTime) {
+                        //LOG.info(new Date((Long) (item.get(0))) + "    " + new Date(currentTime) + " same!");
+                        newDatas.add(item);
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) continue;
+                List nullItem = new ArrayList();
+                nullItem.add(currentTime);
+                Map nullData = new LinkedHashMap();
+                nullItem.add(nullData);
+                newDatas.add(nullItem);
+            }
+            tempObj.put("data", newDatas);
+            tempObj.put("start", request.getStart());
+            tempObj.put("end", request.getEnd());
+            tempObj.put("frequency", frequency);
+            backData = gson.toJson(tempObj);
+        }
+        long end = System.currentTimeMillis();
+        LOG.info("Total Time:"+ (end - start) + "ms");
+        // send data to remote client.
+        session.getRemote().sendString(backData);
+    }
+
+
+    private String getSingleResponse(final StreamRequest request, StoreIterator iterator) throws JsonGenerationException, JsonMappingException, IOException {
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final StreamResponse response = new StreamResponse(request.getName(), request.getStream(), iterator.getCollectionName(), iterator);
+        objectMapper.writeValue(out, response);
+        return out.toString();
+    }
+
+    private String getScatterResponse(final StreamRequest request, final View view, final Device device) throws JsonGenerationException, JsonMappingException, IOException, ApplicationServiceException {
+
+        final List<StreamScatterItem> list = new ArrayList<StreamScatterItem>();
+        int samples = 0;
+        if (request.getSamples() > 0) {
+            samples = request.getSamples();
+        } else {
+            samples = 1000;
+        }
+
+        AppClient app = clientCache.getAppClient(request.getApplicationName());
+
+        final Map<DeviceKey, DeviceRelation[]> relations = ((DeviceService) app.getService("device")).getChildRelations(DeviceRelationType.getSymbol(request.getChildRelation()), device.getKey());
+        for (final DeviceKey key : relations.keySet()) {
+            final Device childDevice = ((DeviceService) app.getService("device")).getDevice(key);
+            final View data = view.slice(new Date(request.getStart()), new Date(request.getEnd())).sample(samples).device(childDevice.getKey(), childDevice.getDeviceType());
+            final StoreIterator iterator = data.iterator();
+            final long frequency = iterator.getCollectionFrequency();
+            list.add(new StreamScatterItem(childDevice, iterator, frequency));
+        }
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final StreamScatterResponse response = new StreamScatterResponse(request.getName(), request.getStream(), "scatter", list);
+        response.setChildRelation(request.getChildRelation());
+        objectMapper.writeValue(out, response);
+        return out.toString();
+    }
+
+    // called in case of an error
+    @OnWebSocketError
+    public void handleError(Throwable error) {
+        error.printStackTrace();
+    }
+
+
+}

@@ -1,0 +1,60 @@
+package com.bda.realtime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@WebSocket
+public class StreamSocket {
+
+
+    private static final Logger LOG = LoggerFactory.getLogger(StreamSocket.class);
+
+    private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+    private Session session;
+
+
+
+    // called when the socket connection with the browser is established
+    @OnWebSocketConnect
+    public void handleConnect(Session session) {
+        this.session = session;
+        clients.add(session);
+        LOG.info(session.getRemoteAddress().getHostString() + " connected~~~~~");
+    }
+
+    // called when the connection closed
+    @OnWebSocketClose
+    public void handleClose(int statusCode, String reason) {
+        clients.remove(session);
+        LOG.info("Connection closed with" + session.getRemoteAddress().getHostString() + " statusCode=" + statusCode + ", reason=" + reason);
+    }
+
+//    final private Gson gson = new Gson();
+
+    // called when a message received from the browser
+    @OnWebSocketMessage
+    public void handleMessage(String message){
+       System.out.println("111111");
+       session.getRemote().sendString(backData);
+    }
+
+
+  
+    // called in case of an error
+    @OnWebSocketError
+    public void handleError(Throwable error) {
+        error.printStackTrace();
+    }
+
+
+}

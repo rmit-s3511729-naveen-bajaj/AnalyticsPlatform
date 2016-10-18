@@ -1,0 +1,46 @@
+<div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Charts
+            <a class="btn btn-success pull-right" ng-click="addChartPage()"> <i class="fa fa-plus append-icon"></i> Add </a></h3>
+            </h1>
+            
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <div class="dataTable">
+        		<table st-table="rowCharts" st-safe-src="allCharts"  
+			class="table table-striped">
+			<thead style="background-color: lightskyblue;">
+				<tr>
+					<th st-sort="name">Name</th>
+					<th >Datasource</th>
+					<th></th>
+				</tr>
+				
+			</thead>
+			<tbody>
+				<tr ng-repeat="row in rowCharts">
+					<td><a href="" ng-click="editChartPage(row.chartName)">{{row.chartName}}</a></td>
+					<td>{{row.datasourceName}}</td>
+					<td><span>
+					<a href="" ng-click="deleteChart(row.chartName)" data-toggle="tooltip" tooltip-placement="bottom" tooltip="Delete" tooltip-append-to-body="true">
+					<i class="fa fa-trash-o fa-2x"></i></a>
+					</span></td>
+				</tr>
+			</tbody>
+		 <tfoot>
+			<tr>
+				<td colspan="2" class="text-center">
+					<div st-pagination="" st-items-by-page="itemsByPage" st-template="resources/scripts/directives/pagination.custom.html"></div>
+				</td>
+			</tr>
+		</tfoot>
+ 
+
+		</table>
+       
+
+    </div>
+</div>

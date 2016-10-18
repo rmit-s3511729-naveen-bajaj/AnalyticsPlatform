@@ -1,0 +1,105 @@
+package com.bda.realtime;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+
+
+/**
+ * Created by ericwang on 17/02/2016.
+ */
+@WebSocket
+public class StreamSocket {
+
+
+    private static final Logger LOG = LoggerFactory.getLogger(StreamSocket.class);
+
+    private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+    private Session session;
+
+
+    private ClientCache clientCache;
+
+
+
+   
+
+    // called when the socket connection with the browser is established
+    @OnWebSocketConnect
+    public void handleConnect(Session session) {
+        this.session = session;
+        clients.add(session);
+        LOG.info(session.getRemoteAddress().getHostString() + " connected~~~~~");
+    }
+
+    // called when the connection closed
+    @OnWebSocketClose
+    public void handleClose(int statusCode, String reason) {
+        clients.remove(session);
+        LOG.info("Connection closed with" + session.getRemoteAddress().getHostString() + " statusCode=" + statusCode + ", reason=" + reason);
+    }
+
+    final private Gson gson = new Gson();
+
+    // called when a message received from the browser
+    @OnWebSocketMessage
+    public void handleMessage(String message) throws IOException, ApplicationServiceException {
+       System.out.println("111111");
+    }
+
+
+    private String getSingleResponse(final StreamRequest request, StoreIterator iterator) throws JsonGenerationException, JsonMappingException, IOException {
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final StreamResponse response = new StreamResponse(request.getName(), request.getStream(), iterator.getCollectionName(), iterator);
+        objectMapper.writeValue(out, response);
+        return out.toString();
+    }
+
+    private String getScatterResponse(final StreamRequest request, final View view, final Device device) throws JsonGenerationException, JsonMappingException, IOException, ApplicationServiceException {
+
+        final List<StreamScatterItem> list = new ArrayList<StreamScatterItem>();
+        int samples = 0;
+        if (request.getSamples() > 0) {
+            samples = request.getSamples();
+        } else {
+            samples = 1000;
+        }
+
+        AppClient app = clientCache.getAppClient(request.getApplicationName());
+
+        final Map<DeviceKey, DeviceRelation[]> relations = ((DeviceService) app.getService("device")).getChildRelations(DeviceRelationType.getSymbol(request.getChildRelation()), device.getKey());
+        for (final DeviceKey key : relations.keySet()) {
+            final Device childDevice = ((DeviceService) app.getService("device")).getDevice(key);
+            final View data = view.slice(new Date(request.getStart()), new Date(request.getEnd())).sample(samples).device(childDevice.getKey(), childDevice.getDeviceType());
+            final StoreIterator iterator = data.iterator();
+            final long frequency = iterator.getCollectionFrequency();
+            list.add(new StreamScatterItem(childDevice, iterator, frequency));
+        }
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final StreamScatterResponse response = new StreamScatterResponse(request.getName(), request.getStream(), "scatter", list);
+        response.setChildRelation(request.getChildRelation());
+        objectMapper.writeValue(out, response);
+        return out.toString();
+    }
+
+    // called in case of an error
+    @OnWebSocketError
+    public void handleError(Throwable error) {
+        error.printStackTrace();
+    }
+
+
+}

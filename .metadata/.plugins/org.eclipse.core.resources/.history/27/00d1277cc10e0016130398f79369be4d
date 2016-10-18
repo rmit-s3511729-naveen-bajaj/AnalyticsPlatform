@@ -1,0 +1,12 @@
+# fitbit properties
+subscriberCode=b96cd29568af2e77f24348070306313f73d69ea7721411eeeb023fe647ffc656
+apiBaseUrl=api.fitbit.com
+fitbitSiteBaseUrl=http://www.fitbit.com
+clientConsumerKey=a2dd66de74b3a9bfa58e65325e25c70b
+clientSecret=e1393f2876a4758b1d6089298b06fbf7
+accessToken=a752a1248076fe96e555ab3d5f0349f8
+accessTokenSecret=601d1062afe58710c8d7f0f2ca0093ff
+
+# kafka properties
+server_config=localhost:9092
+topic=test

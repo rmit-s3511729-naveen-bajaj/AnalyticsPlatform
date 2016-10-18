@@ -1,0 +1,36 @@
+package com.bda.realtime;
+
+import org.codehaus.jackson.Version;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.futuregrid.platform.rest.cache.ClientCache;
+import com.futuregrid.platform.rest.exception.DataNotFoundExceptionMapper;
+import com.futuregrid.platform.rest.exception.GenericExceptionMapper;
+import com.futuregrid.platform.rest.exception.NotAcceptableExceptionMapper;
+import com.futuregrid.platform.rest.resources.ApplicationServiceResource;
+import com.futuregrid.platform.rest.resources.DeviceServiceResource;
+import com.futuregrid.platform.rest.resources.LoginServiceResource;
+import com.futuregrid.platform.rest.resources.PermissionServiceResource;
+import com.futuregrid.platform.rest.resources.RoleServiceResource;
+import com.futuregrid.platform.rest.resources.StoreServiceResource;
+import com.futuregrid.platform.rest.resources.UserInterfaceServiceResource;
+import com.futuregrid.platform.rest.resources.UserServiceResource;
+import com.futuregrid.platform.rest.serialization.SerializerModule;
+import com.futuregrid.platform.rest.socket.WSServlet;
+import com.google.inject.Scopes;
+import com.google.inject.servlet.ServletModule;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+
+public class RestServletModule extends ServletModule {
+
+    @Override
+    protected void configureServlets() {
+        // Rest Resources
+
+
+        bind(WSServlet.class).in(Scopes.SINGLETON);
+        serve("/ws").with(WSServlet.class);
+
+    }
+}

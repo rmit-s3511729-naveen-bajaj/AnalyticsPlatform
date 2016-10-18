@@ -1,0 +1,5 @@
+package com.bda.websocket.server;
+
+public class BroadcastServerEndpoint {
+
+}

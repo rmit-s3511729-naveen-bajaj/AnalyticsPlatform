@@ -1,0 +1,63 @@
+package com.futuregrid.platform.rest;
+
+import org.codehaus.jackson.Version;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.futuregrid.platform.rest.cache.ClientCache;
+import com.futuregrid.platform.rest.exception.DataNotFoundExceptionMapper;
+import com.futuregrid.platform.rest.exception.GenericExceptionMapper;
+import com.futuregrid.platform.rest.exception.NotAcceptableExceptionMapper;
+import com.futuregrid.platform.rest.resources.ApplicationServiceResource;
+import com.futuregrid.platform.rest.resources.DeviceServiceResource;
+import com.futuregrid.platform.rest.resources.LoginServiceResource;
+import com.futuregrid.platform.rest.resources.PermissionServiceResource;
+import com.futuregrid.platform.rest.resources.RoleServiceResource;
+import com.futuregrid.platform.rest.resources.StoreServiceResource;
+import com.futuregrid.platform.rest.resources.UserInterfaceServiceResource;
+import com.futuregrid.platform.rest.resources.UserServiceResource;
+import com.futuregrid.platform.rest.serialization.SerializerModule;
+import com.futuregrid.platform.rest.socket.WSServlet;
+import com.google.inject.Scopes;
+import com.google.inject.servlet.ServletModule;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+
+public class RestServletModule extends ServletModule {
+
+    @Override
+    protected void configureServlets() {
+        // Rest Resources
+        bind(StoreServiceResource.class).in(Scopes.SINGLETON);
+        bind(ApplicationServiceResource.class).in(Scopes.SINGLETON);
+        bind(RoleServiceResource.class).in(Scopes.SINGLETON);
+        bind(UserServiceResource.class).in(Scopes.SINGLETON);
+        bind(LoginServiceResource.class).in(Scopes.SINGLETON);
+        bind(UserInterfaceServiceResource.class).in(Scopes.SINGLETON);
+        bind(DeviceServiceResource.class).in(Scopes.SINGLETON);
+        bind(PermissionServiceResource.class).in(Scopes.SINGLETON);
+
+        // Exceptions
+        bind(GenericExceptionMapper.class); // exception handler for globe
+        bind(DataNotFoundExceptionMapper.class);
+        bind(NotAcceptableExceptionMapper.class).in(Scopes.SINGLETON);//
+        // Swagger 
+        bind(io.swagger.jaxrs.listing.ApiListingResource.class).in(Scopes.SINGLETON);
+        bind(io.swagger.jaxrs.listing.SwaggerSerializers.class).in(Scopes.SINGLETON);
+
+        // Jackson Custom Serializer and Deserializer
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new SerializerModule("Module", new Version(2, 0, 0, null)));
+        JacksonJsonProvider provider = new JacksonJsonProvider(mapper);
+        bind(JacksonJsonProvider.class).toInstance(provider);
+
+        // Bind in ClientCache.
+        bind(ClientCache.class);
+
+        // Hook Jersey into the Guice Servlet.
+        serve("/api/*").with(GuiceContainer.class);
+
+        bind(WSServlet.class).in(Scopes.SINGLETON);
+        serve("/ws").with(WSServlet.class);
+
+    }
+}

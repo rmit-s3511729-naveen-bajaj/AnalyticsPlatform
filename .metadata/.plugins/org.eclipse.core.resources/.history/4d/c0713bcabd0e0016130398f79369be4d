@@ -1,0 +1,11 @@
+package com.bda.realtime;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.websocket.Session;
+
+public class WebSocketServer {
+	 private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+}

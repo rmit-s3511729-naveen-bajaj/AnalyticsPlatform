@@ -1,0 +1,54 @@
+package com.bda.kafka;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
+
+public class BDAKafkaProducer {
+	
+	static Properties prop;
+	static{
+		 prop = new Properties();
+		try {
+			File configDir = new File(System.getProperty("catalina.base"), "conf");
+			File configFile = new File(configDir, "myconfig.properties");
+			InputStream stream = new FileInputStream(configFile);
+			Properties props = new Properties();
+			props.load(stream);
+//			prop.load(new UBFKafkaProducer().getClass().getResourceAsStream("/com/ubf/resource/config.properties"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public static void sendMessages(String messages) throws InterruptedException, ExecutionException {
+		Properties props = new Properties();
+		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,prop.getProperty("server_config"));
+		props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,StringSerializer.class.getName());
+		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,StringSerializer.class.getName());
+
+		KafkaProducer<String,String> producer = new KafkaProducer<String,String>(props);
+		
+		boolean sync = false;
+		String topic=prop.getProperty("topic");
+
+		ProducerRecord<String,String> producerRecord = new ProducerRecord<String,String>(topic, messages);
+		if (sync) {
+			producer.send(producerRecord).get();
+		} else {
+			producer.send(producerRecord);
+		}
+		producer.close();
+	}
+
+}

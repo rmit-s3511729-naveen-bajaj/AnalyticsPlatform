@@ -1,0 +1,40 @@
+package com.bda.realtime;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.websocket.CloseReason;
+import javax.websocket.OnClose;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+
+@ServerEndpoint("/ratesrv")
+public class WebSocketServer {
+
+	private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+	@OnOpen
+	public void onOpen(final Session session) {
+		clients.add(session);
+	}
+
+	@OnClose
+	public void onClose(final Session session, final CloseReason closeReason) {
+		clients.remove(session);
+	}
+	
+	 @OnMessage
+	 public String onMessage(Session session, String msg) {
+	  try {   
+	   System.out.println("received msg "+msg+" from "+session.getId());
+	  } catch (Exception e) {
+	   e.printStackTrace();
+	  }
+	 }
+}
+
+
+

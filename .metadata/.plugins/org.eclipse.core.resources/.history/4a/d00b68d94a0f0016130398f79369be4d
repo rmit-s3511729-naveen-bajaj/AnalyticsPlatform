@@ -1,0 +1,40 @@
+package com.bda.realtime;
+
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+
+public class Main {
+	
+	public static void main(String[] args) throws Exception {
+		Server server = new Server(8080);
+		 // Setup the basic application "context" for this application at "/"
+        // This is also known as the handler tree (in jetty speak)
+//        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+//        context.setContextPath("/");
+//        server.setHandler(context);
+        
+        // Add a websocket to a specific path spec
+//        ServletHolder holderEvents = new ServletHolder("ws-events", EventServlet.class);
+//        context.addServlet(holderEvents, "/ratesrv/*");
+        
+        
+		 ResourceHandler resource_handler = new ResourceHandler();
+		 resource_handler.setDirectoriesListed(true);
+		 resource_handler.setWelcomeFiles(new String[]{"index.html"});
+		 resource_handler.setResourceBase("src/main/webapp/");
+	        
+	        // Add the ResourceHandler to the server.
+	        GzipHandler gzip = new GzipHandler();
+	        server.setHandler(gzip);
+	        HandlerList handlers = new HandlerList();
+	        handlers.setHandlers(new Handler[] { resource_handler, new DefaultHandler() });
+	        gzip.setHandler(handlers);
+	 
+
+        server.start();
+        server.join();
+	}
+}

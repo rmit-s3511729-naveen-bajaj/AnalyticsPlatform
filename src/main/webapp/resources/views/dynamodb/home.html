@@ -1,0 +1,44 @@
+<div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">DynamoDB</h1>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <div class="row">
+    <div class="form-group">
+    <label class="col-sm-2">DataSource Name:</label>
+					<div class="col-sm-4">
+						<select class="form-control column" ng-model="dynamodb.dsName"
+							ng-change="updateDyanmodbTables(dynamodb.dsName)">
+							<option selected value="">Select datasources</option>
+							<option ng-repeat="item in allDatasources" value="{{item.name}}">{{item.name}}</option>
+						</select>
+
+					</div>
+					    <label class="col-sm-2">Table Name:</label>
+					<div class="col-sm-4">
+						<select class="form-control column" ng-model="dynamodb.tableName"
+							ng-change="updateDyanmodbTablesData(dynamodb.tableName)">
+							<option selected value="">Select tables</option>
+							<option ng-repeat="item in allTables" value="{{item}}">{{item}}</option>
+						</select>
+
+					</div>
+    </div>
+<div>
+
+<table ng-table="tableParams" class="table" show-filter="true">
+    <tr ng-repeat="user in $data">
+        <td title="'Id'" filter="{ name: 'text'}" sortable="'Id'">
+            {{user.Id}}</td>
+        <td title="'baby_name'" sortable="'baby_name'">
+            {{user.baby_name}}</td>
+            <td title="'gender'" sortable="'gender'">
+            {{user.gender}}</td>
+    </tr>
+</table>
+</div>
+    </div>
+</div>

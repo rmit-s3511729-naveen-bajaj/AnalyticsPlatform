@@ -1,0 +1,15 @@
+package com.bda.realtime;
+
+import javax.websocket.ClientEndpoint;
+import javax.websocket.OnMessage;
+
+@ClientEndpoint
+public class WebSocketController {
+	@OnMessage
+    public void onMessage(String message) {
+//the new USD rate arrives from the websocket server side.
+       System.out.println("Received msg: "+message);        
+    }
+
+
+}

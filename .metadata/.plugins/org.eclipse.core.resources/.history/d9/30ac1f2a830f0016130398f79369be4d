@@ -1,0 +1,100 @@
+package com.bda.kafka;
+
+import javax.websocket.EncodeException;
+import javax.websocket.Encoder;
+import javax.websocket.EndpointConfig;
+
+
+public class KafkaMessage {
+	private String message;
+	
+	public KafkaMessage(){
+		
+	}
+	
+	public KafkaMessage(String message){
+		this.message = message;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	
+	public static class MessageEncoder implements Encoder.Text< KafkaMessage > {
+		@Override
+		public void init( final EndpointConfig config ) {
+		}
+
+
+
+
+		@Override
+		public String encode( final KafkaMessage message ) throws EncodeException {
+		return Json.createObjectBuilder()	
+		.add( "message", message.getMessage() )
+		.build()
+		.toString();
+		}
+
+
+
+
+		@Override
+		public void destroy() {
+		}
+		}
+		
+	
+	public static class MessageDecoder implements Decoder.Text< KafkaMessage > {
+		private JsonReaderFactory factory = Json.createReaderFactory( Collections.< String, Object >emptyMap() );
+
+
+
+
+		@Override
+		public void init( final EndpointConfig config ) {
+		}
+
+
+
+
+		@Override
+		public KafkaMessage decode( final String str ) throws DecodeException {
+		final KafkaMessage message = new KafkaMessage();
+
+
+
+
+		try( final JsonReader reader = factory.createReader( new StringReader( str ) ) ) {
+		final JsonObject json = reader.readObject();
+		message.setMessage( json.getString( "message" ) );
+		}
+
+
+
+
+		return message;
+		}
+
+
+
+
+		@Override
+		public boolean willDecode( final String str ) {
+		return true;
+		}
+
+
+
+
+		@Override
+		public void destroy() {
+		}
+		}
+		
+
+}

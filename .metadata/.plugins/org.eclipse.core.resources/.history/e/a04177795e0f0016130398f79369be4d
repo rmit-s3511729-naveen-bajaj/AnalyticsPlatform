@@ -1,0 +1,64 @@
+package com.bda.realtime;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.futuregrid.platform.model.DeviceKey;
+import com.futuregrid.platform.model.Timestamped;
+import com.futuregrid.platform.security.AuthenticationService;
+import com.futuregrid.platform.service.device.Device;
+import com.futuregrid.platform.service.device.DeviceRelation;
+import com.futuregrid.platform.service.device.DeviceRelationType;
+import com.futuregrid.platform.service.device.DeviceService;
+import com.futuregrid.platform.service.store.StoreIterator;
+import com.futuregrid.platform.service.store.StoreService;
+import com.futuregrid.platform.service.store.View;
+import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Attempt at creating a simple socket server.
+ */
+
+@Singleton
+@ServerEndpoint(value = "/streaming")
+public class StreamsSocketServer {
+
+    /**
+     * Log instance.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(StreamsSocketServer.class);
+
+    private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+  
+  
+
+    @OnOpen
+    public void onOpen(final Session session) {
+        clients.add(session);
+    }
+
+    @OnClose
+    public void onClose(final Session session, final CloseReason closeReason) {
+        clients.remove(session);
+    }
+
+    @OnMessage
+    public String onMessage(final String message, final Session session) {
+
+       
+
+        return message;
+    }
+
+ 
+}

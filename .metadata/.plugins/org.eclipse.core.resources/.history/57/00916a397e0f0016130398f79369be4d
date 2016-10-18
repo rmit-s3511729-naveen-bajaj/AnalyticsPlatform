@@ -1,0 +1,5 @@
+package com.bda.kafka;
+
+public class KafkaMessage {
+
+}

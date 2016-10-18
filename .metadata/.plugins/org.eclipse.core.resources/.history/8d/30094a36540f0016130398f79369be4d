@@ -1,0 +1,23 @@
+package com.bda.realtime;
+
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+
+/**
+ * Created by ericwang on 17/02/2016.
+ */
+public class AdvancedStreamSocketCreator implements WebSocketCreator {
+
+
+    private StreamSocket streamSocket;
+
+    public AdvancedStreamSocketCreator() {
+        streamSocket = new StreamSocket();
+    }
+
+    @Override
+    public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
+        return streamSocket;
+    }
+}

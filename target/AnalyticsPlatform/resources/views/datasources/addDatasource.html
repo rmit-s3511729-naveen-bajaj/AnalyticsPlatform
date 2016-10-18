@@ -1,0 +1,128 @@
+<div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<h3 class="page-header">
+				<a ui-sref="app.datasource" href="">Datasources</a> > addDatasource
+
+				<a class="btn btn-success pull-right" ng-click="saveDatasource()">
+					<i class="fa fa-save append-icon"></i> Save
+				</a>
+
+			</h3>
+
+		</div>
+		<div>
+			<div class="errorMessage">{{ error_Message }}</div>
+			<div class="form-group">
+				<form class="form-horizontal" role="form">
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">DataSource Name:</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter DataSource Name"
+								ng-model="addDatasource.name">
+						</div>
+					</div>
+
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">DataSource Type:</label>
+						<div class="col-sm-6">
+							<select class="form-control column" ng-model="addDatasource.type"
+								ng-options=" t for t in supportedDatasources">
+								<option selected value="">Select type</option>
+
+							</select>
+
+						</div>
+					</div>
+					<div ng-if="addDatasource.type" class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">DataSource Sub
+							Type:</label>
+						<div class="col-sm-6">
+							<select ng-if="addDatasource.type == 'RDBMS'" class="form-control column"
+								ng-model="addDatasource.subType"
+								ng-options=" t for t in supportedRDBMSDatasources">
+								<option selected value="">Select sub type</option>
+
+							</select>
+							<select ng-if="addDatasource.type == 'NoSQL'" class="form-control column"
+								ng-model="addDatasource.subType"
+								ng-options=" t for t in supportedNoSQLDatasources">
+								<option selected value="">Select sub type</option>
+
+							</select>
+							<select ng-if="addDatasource.type == 'Distributed'" class="form-control column"
+								ng-model="addDatasource.subType"
+								ng-options=" t for t in supportedDistributedDatasources">
+								<option selected value="">Select sub type</option>
+
+							</select>
+
+						</div>
+					</div>
+					
+					<div ng-if="addDatasource.subType == 'DynamoDB'" class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">AWS accessKey: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter accessKey" ng-model="addDatasource.accessKey">
+						</div>
+					</div>
+					<div ng-if="addDatasource.subType == 'DynamoDB'" class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">AWS secretKey: </label>
+						<div class="col-sm-6">
+							<input type="password" class="form-control"
+								placeholder="Enter secretKey" ng-model="addDatasource.secretKey">
+						</div>
+					</div>
+					
+					<div ng-if="addDatasource.subType != 'DynamoDB'">
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Hostname: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter hostname" ng-model="addDatasource.hostname">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Port: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter port number" ng-model="addDatasource.port">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Database Name:</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter Database Name" ng-model="addDatasource.dbName">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Username: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter username" ng-model="addDatasource.username">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Password: </label>
+						<div class="col-sm-6">
+							<input type="password" class="form-control"
+								placeholder="Enter DataSource Name"
+								ng-model="addDatasource.password">
+						</div>
+					</div>
+					</div>
+				</form>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+
+
+

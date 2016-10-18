@@ -1,0 +1,56 @@
+package com.bda.websocket;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+
+import com.bda.kafka.BDAKafkaConsumer;
+
+@WebSocket
+public class MyWebSocketHandler {
+	  private Session session;
+	  private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+	@OnWebSocketClose
+    public void onClose(int statusCode, String reason) {
+		 clients.remove(session);
+        System.out.println("Close: statusCode=" + statusCode + ", reason=" + reason);
+    }
+
+    @OnWebSocketError
+    public void onError(Throwable t) {
+//    	 clients.remove(session);
+    	 t.printStackTrace();
+    }
+
+    @OnWebSocketConnect
+    public void onConnect(Session session) {
+    
+        System.out.println("Connect: " + session.getRemoteAddress().getAddress());
+
+        	this.session = session;
+        	 clients.add(session);
+            session.getRemote().sendString("Hello Webbrowser");
+       
+    }
+
+    @OnWebSocketMessage
+    public void onMessage(String message) throws IOException {
+    	BDAKafkaConsumer consumer = new BDAKafkaConsumer();
+    	System.out.println("1111");
+      System.out.println(consumer.getMessageCount());
+//      session.getRemote().sendString(backData);
+        session.getRemote().sendString(consumer.getMessageCount()+"");
+        System.out.println("Message: " + message);
+
+    }
+
+}

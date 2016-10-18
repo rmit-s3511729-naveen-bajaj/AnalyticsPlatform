@@ -1,0 +1,6 @@
+package com.bda.realtime;
+
+@WebSocket
+public class WebSocketController {
+
+}

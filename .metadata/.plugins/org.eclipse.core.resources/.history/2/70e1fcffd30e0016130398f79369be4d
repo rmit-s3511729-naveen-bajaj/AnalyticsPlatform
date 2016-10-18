@@ -1,0 +1,24 @@
+package com.bda.realtime;
+
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+
+public class Main {
+	
+	public static void main(String[] args) throws Exception {
+		Server server = new Server(8080);
+		ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+		 ResourceHandler ui = new ResourceHandler();
+	        ui.setDirectoriesListed(true);
+	        ui.setWelcomeFiles(new String[]{"index.html"});
+	        // should be a real path of WebContent.
+//	        URL baseUrl = Main.class.getClassLoader().getResource("log4j2.xml");
+//	        ui.setResourceBase(baseUrl.toString().replace("log4j2.xml","")+"webapp/");
+	        ui.setResourceBase("src/main/webapp/");
+//        server.setHandler(new Main());
+ 
+        server.start();
+        server.join();
+	}
+}

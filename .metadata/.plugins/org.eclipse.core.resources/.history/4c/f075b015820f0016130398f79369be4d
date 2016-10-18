@@ -1,0 +1,5 @@
+package com.bda.realtime;
+
+public class AppConfig {
+
+}

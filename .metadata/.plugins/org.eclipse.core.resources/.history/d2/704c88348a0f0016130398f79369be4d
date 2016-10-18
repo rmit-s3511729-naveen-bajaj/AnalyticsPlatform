@@ -1,0 +1,9 @@
+
+# kafka properties
+server_config=localhost:9092
+topic=test
+
+zookeeper_connect=localhost:2181
+broker_list=localhost:9092
+group_id=test-consumer-group
+auto_offset_reset=smallest

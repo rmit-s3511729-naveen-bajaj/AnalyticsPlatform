@@ -1,0 +1,104 @@
+<div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<h3 class="page-header">
+				<a ui-sref="app.datasource" href="">Datasources</a> > {{editDatasourceName}}
+
+				<a class="btn btn-success pull-right" ng-click="updateDatasource()">
+					<i class="fa fa-save append-icon"></i> Update
+				</a>
+
+			</h3>
+
+		</div>
+		<div>
+			<div class="errorMessage">{{ error_Message }}</div>
+			<div class="form-group">
+				<form class="form-horizontal" role="form">
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">DataSource Name:</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter DataSource Name"
+								ng-model="editDatasourceDetails.name">
+						</div>
+					</div>
+
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">DataSource Type:</label>
+						<div class="col-sm-6">
+							<select class="form-control column" ng-model="editDatasourceDetails.type"
+								ng-options=" t for t in supportedDatasources">
+								<option selected value="">Select type</option>
+
+							</select>
+
+						</div>
+					</div>
+					<div ng-if="editDatasourceDetails.type" class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">DataSource Sub
+							Type:</label>
+						<div class="col-sm-6">
+							<select ng-if="editDatasourceDetails.type == 'RDBMS'" class="form-control column"
+								ng-model="editDatasourceDetails.subType"
+								ng-options=" t for t in supportedRDBMSDatasources">
+								<option selected value="">Select sub type</option>
+
+							</select>
+							<select ng-if="editDatasourceDetails.type == 'NoSQL'" class="form-control column"
+								ng-model="editDatasourceDetails.subType"
+								ng-options=" t for t in supportedNoSQLDatasources">
+								<option selected value="">Select sub type</option>
+
+							</select>
+
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Hostname: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter hostname" ng-model="editDatasourceDetails.hostname">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Port: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter port number" ng-model="editDatasourceDetails.port">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Database Name:</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter Database Name" ng-model="editDatasourceDetails.dbName">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Username: </label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control"
+								placeholder="Enter username" ng-model="editDatasourceDetails.username">
+						</div>
+					</div>
+					<div class="form-group" style="margin-top: 10px;">
+						<label class="control-label col-sm-2">Password: </label>
+						<div class="col-sm-6">
+							<input type="password" class="form-control"
+								placeholder="Enter DataSource Name"
+								ng-model="editDatasourceDetails.password">
+						</div>
+					</div>
+				</form>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+
+
+

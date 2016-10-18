@@ -1,0 +1,177 @@
+package com.futuregrid.platform.rest.socket;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.futuregrid.platform.model.DeviceKey;
+import com.futuregrid.platform.model.Timestamped;
+import com.futuregrid.platform.security.AuthenticationService;
+import com.futuregrid.platform.service.device.Device;
+import com.futuregrid.platform.service.device.DeviceRelation;
+import com.futuregrid.platform.service.device.DeviceRelationType;
+import com.futuregrid.platform.service.device.DeviceService;
+import com.futuregrid.platform.service.store.StoreIterator;
+import com.futuregrid.platform.service.store.StoreService;
+import com.futuregrid.platform.service.store.View;
+import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Attempt at creating a simple socket server.
+ */
+
+@Singleton
+@ServerEndpoint(value = "/streaming")
+public class StreamsSocketServer {
+
+    /**
+     * Log instance.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(StreamsSocketServer.class);
+
+    private static final Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
+
+    private static AuthenticationService authService;
+
+    private static StoreService storeService;
+
+    private static DeviceService deviceService;
+
+    private final ObjectMapper objectMapper;
+
+    public static void setStreamService(final AuthenticationService aService, final StoreService service, final DeviceService dService) {
+        authService = aService;
+        storeService = service;
+        deviceService = dService;
+    }
+
+    /**
+     * Constructor for StreamSocketServer.
+     */
+    public StreamsSocketServer() {
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new SimpleModule() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void setupModule(final SetupContext context) {
+                super.setupModule(context);
+
+                // Return special serializer for all objects assignable from Timestamped.
+                context.addBeanSerializerModifier(new BeanSerializerModifier() {
+
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public JsonSerializer<?> modifySerializer(final SerializationConfig config, final BeanDescription beanDesc, final JsonSerializer<?> serializer) {
+                        if (Timestamped.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                            return new DataJsonSerializer((JsonSerializer<Timestamped>) serializer);
+                        } else if (StoreIterator.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                            return new StreamIteratorJsonSerializer();
+                        } else if (Device.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                            return new DeviceJsonSerializer();
+                        }
+                        return serializer;
+                    }
+                });
+            }
+        });
+    }
+
+    @OnOpen
+    public void onOpen(final Session session) {
+        clients.add(session);
+    }
+
+    @OnClose
+    public void onClose(final Session session, final CloseReason closeReason) {
+        clients.remove(session);
+    }
+
+    @OnMessage
+    public String onMessage(final String message, final Session session) {
+
+        try {
+            final com.futuregrid.platform.security.Session fgpSession = (com.futuregrid.platform.security.Session) session.getUserPrincipal();
+            if (fgpSession != null) {
+                System.out.println("authenticated " + fgpSession.getName());
+                authService.setThreadSession(fgpSession);
+            } else {
+                System.out.println("Not authenticated");
+            }
+
+            System.out.println("request: " + message);
+            final StreamRequest request = objectMapper.readValue(message, StreamRequest.class);
+            final Device device = deviceService.getDevice(request.getDevice());
+            final View storeView = storeService.getView(request.getStream(), device);
+
+            System.out.println("view " + request.getStream());
+            System.out.println("source " + request.getDevice());
+            System.out.println("start " + request.getStart());
+            System.out.println("end " + request.getEnd());
+            System.out.println("samples " + request.getSamples());
+
+            if (request.getChildRelation() != null) {
+                return getScatterResponse(request, storeView, device);
+            } else {
+                return getSingleResponse(request, storeView, device);
+            }
+        } catch (final Throwable e) {
+            LOG.error("EXCEPTION CAUGHT!", e);
+        }
+
+        return message;
+    }
+
+    private String getSingleResponse(final StreamRequest request, final View view, final Device device) throws JsonGenerationException, JsonMappingException, IOException {
+
+        View data = view.slice(new Date(request.getStart()), new Date(request.getEnd()));
+        if (request.getSamples() > 0) {
+            data = data.sample(request.getSamples());
+        } else {
+            data = data.sample(1000);
+        }
+        final StoreIterator iterator = data.iterator();
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final StreamResponse response = new StreamResponse(request.getName(), request.getStream(), iterator.getCollectionName(), iterator);
+        objectMapper.writeValue(out, response);
+        System.out.println("response: " + out.toString());
+        return out.toString();
+    }
+
+    private String getScatterResponse(final StreamRequest request, final View view, final Device device) throws JsonGenerationException, JsonMappingException, IOException {
+
+        final List<StreamScatterItem> list = new ArrayList<StreamScatterItem>();
+        int samples = 0;
+        if (request.getSamples() > 0) {
+            samples = request.getSamples();
+        } else {
+            samples = 1000;
+        }
+
+        final Map<DeviceKey, DeviceRelation[]> relations = deviceService.getChildRelations(DeviceRelationType.getSymbol(request.getChildRelation()), device.getKey());
+        for (final DeviceKey key : relations.keySet()) {
+            final Device childDevice = deviceService.getDevice(key);
+            final View data = view.slice(new Date(request.getStart()), new Date(request.getEnd())).sample(samples).device(childDevice.getKey(), childDevice.getDeviceType());
+            final StoreIterator iterator = data.iterator();
+            list.add(new StreamScatterItem(childDevice, iterator));
+            System.out.println("added" + deviceService.getDevice(key).getName());
+        }
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final StreamScatterResponse response = new StreamScatterResponse(request.getName(), request.getStream(), "scatter", list);
+        response.setChildRelation(request.getChildRelation());
+        objectMapper.writeValue(out, response);
+        System.out.println("response: " + out.toString());
+        return out.toString();
+    }
+}

@@ -1,0 +1,34 @@
+package com.bda.websocket.server;
+
+public class BroadcastServerEndpoint {
+	private static final Set< Session > sessions = 
+			Collections.synchronizedSet( new HashSet< Session >() ); 
+
+
+
+
+	@OnOpen
+	public void onOpen( final Session session ) {
+		sessions.add( session );
+	}
+
+
+
+
+	@OnClose
+	public void onClose( final Session session ) {
+		sessions.remove( session );
+	}
+
+
+
+
+	@OnMessage
+	public void onMessage( final Message message, final Session client ) 
+			throws IOException, EncodeException {
+		for( final Session session: sessions ) {
+			session.getBasicRemote().sendObject( message );
+		}
+	}
+
+}

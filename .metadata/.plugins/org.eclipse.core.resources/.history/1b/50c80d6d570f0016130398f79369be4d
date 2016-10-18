@@ -1,0 +1,47 @@
+<!DOCTYPE html >
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WebSocket Client</title>
+ <script type="text/javascript">
+ var ws = $websocket("ws://localhost:8080/ws");
+
+ var collection = [];
+
+ var callBackFunctions = [];
+
+ ws.onError(function (event) {
+     console.log('connection Error', event);
+ });
+
+ ws.onClose(function (event) {
+     collection = [];
+     console.log('connection closed', event);
+ });
+
+ ws.onOpen(function () {
+     console.log('connection open');
+ });
+
+ ws.onMessage(function (event) {
+	 console.log(event.data);
+     angular.forEach(callBackFunctions, function (func) {
+         if (JSON.parse(event.data).name == func.id) {
+             func.callBack(event.data);
+             //after data comes back, remove func from collection
+             callBackFunctions.splice(callBackFunctions.indexOf(func), 1);
+         }
+     });
+ });
+
+  </script>
+</head>
+<body>
+<table>
+<tr>
+<td> <label id="rateLbl">Current Rate:</label></td>
+<td> <label id="rate">0</label></td>
+</tr>
+</table>
+</body>
+</html>
