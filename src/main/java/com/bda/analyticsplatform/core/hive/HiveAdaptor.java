@@ -143,7 +143,9 @@ public class HiveAdaptor extends DSObject implements Serializable{
 			statement = connect().prepareStatement("show tables");
 
 			ResultSet resultSet = statement.executeQuery();
+			System.out.println("tables in hive: ");
 			while(resultSet.next()){
+				System.out.println(resultSet.getString(1));
 				getTables().add(resultSet.getString(1));
 			}
 		} catch (SQLException e) {
@@ -197,7 +199,7 @@ public class HiveAdaptor extends DSObject implements Serializable{
 			List<Map<String, Object>> columnsNames = convertResultSetToList(resultSet);
 			for (Map<String, Object> column : columnsNames) {
 				System.out.println(column);
-				columns.add(column.get("COLUMN_NAME").toString());
+				columns.add(column.get("col_name").toString());
 			}
 			System.out.println("columnType-----"+columns);
 			return columns.toString();

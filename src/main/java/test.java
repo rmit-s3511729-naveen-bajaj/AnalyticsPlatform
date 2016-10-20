@@ -25,7 +25,7 @@ public class test {
 		}
  
 		Connection con = DriverManager.getConnection(
-				"jdbc:hive2://115.146.90.163:10000/default", "", "");
+				"jdbc:hive://54.197.15.104:10000/default", "", "");
 		Statement stmt = con.createStatement();
  
 //		String tableName = "empdata";

@@ -78,6 +78,9 @@ angular.module('bdaApp')
 		else if($scope.editDatasourceDetails.type == "NoSQL"){
 			editDatasourceUrl = '/AnalyticsPlatform/api/editNosqlDS/' + $scope.editDatasourceName;
 		}
+		else if($scope.editDatasourceDetails.type == "Distributed"){
+			editDatasourceUrl = '/AnalyticsPlatform/api/editDistributedDS/' + $scope.editDatasourceName;
+		}
 		$http.post(editDatasourceUrl, $scope.editDatasourceDetails, {
 			headers : {
 				"content-type" : "application/json"

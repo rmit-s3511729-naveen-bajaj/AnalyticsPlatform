@@ -256,7 +256,7 @@ function getPieOptions(title,xLabel,yLabel,xColName,yColName,inData){
 
 				"x": function(d){ return d[xColName]; },
 				"y": function(d){ return d[yColName]; },
-				showLabels: false,
+				showLabels: true,
 //				pie: {
 //				dispatch: { //container of event handlers
 //				elementClick: function(e){ pieClickHandler(e) },

@@ -42,7 +42,7 @@ public class DatasourceControllerImpl {
 	
 	public static void editHiveDataSource(String editDsName, String dsDetails) throws BDAException, Exception {
 	JSONObject dsDetailsJson = new JSONObject(dsDetails);
-	if (dsDetailsJson.getString("dbType").equalsIgnoreCase("RDBMS"))
+	if (dsDetailsJson.getString("dbType").equalsIgnoreCase("Distributed"))
 		DataSourceContainer.editHiveDataSource(editDsName, dsDetailsJson);
 //	else if (dsDetailsJson.getString("dbType").equalsIgnoreCase("NoSql"))
 //		DataSourceContainer.editNoSqlDataSource(dsDetailsJson);

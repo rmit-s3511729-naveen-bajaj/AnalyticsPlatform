@@ -152,14 +152,14 @@ public class DataSourceContainer implements Serializable {
 	public static void saveHiveDataSource(JSONObject dsDetailsJson,
 			Integer serialNo) throws Exception {
 			HiveAdaptor object = new HiveAdaptor();
-			object.setType("HIVE");
+			object.setType("Distributed");
 			object.setName(dsDetailsJson.getString("name"));
 			object.setSubType(dsDetailsJson.getString("subType"));
 			object.setDbName(dsDetailsJson.getString("dbName"));
 			object.setHostname( dsDetailsJson.getString("hostname"));
 			object.setPort( dsDetailsJson.getString("port"));
-			object.setUsername( dsDetailsJson.getString("username"));
-			object.setPassword( dsDetailsJson.getString("password"));
+			object.setUsername( dsDetailsJson.has("username")?dsDetailsJson.getString("username"):"");
+			object.setPassword( dsDetailsJson.has("password")?dsDetailsJson.getString("password"):"");
 			object.setDriverClassName("com.cloudera.hive.jdbc41.HS2Driver");
 			String url = "jdbc:hive2://"+object.getHostname()+":"+object.getPort()+"/"+object.getDbName();
 			object.setJdbcURLPattern(url);
@@ -392,7 +392,7 @@ public class DataSourceContainer implements Serializable {
 	public static void saveMongoDBDataSource(JSONObject dsDetailsJson,
 			Integer serialNo) throws Exception {
 			MongoDBAdapter object = new MongoDBAdapter();
-			object.setType("NoSql");
+			object.setType("NoSQL");
 			object.setName(dsDetailsJson.getString("name"));
 			object.setSubType(dsDetailsJson.getString("subType"));
 			object.setDbName(dsDetailsJson.getString("dbName"));
@@ -415,7 +415,7 @@ public class DataSourceContainer implements Serializable {
 			Integer serialNo) throws Exception {
 		DynamoDBAdapter object = new DynamoDBAdapter(dsDetailsJson.getString("accessKey"), dsDetailsJson.getString("secretKey"));
 		object.setName(dsDetailsJson.getString("name"));
-		object.setType("NoSql");
+		object.setType("NoSQL");
 		object.connect();
 
 		DataSourceContainer.getDsMetadata().add(object);
@@ -448,6 +448,19 @@ public class DataSourceContainer implements Serializable {
 		
 		
 	}
+	
+//	public static void editHiveDataSource(String editDsName, JSONObject dsDetailsJson) throws Exception {
+//		MongoDBAdapter ds = (MongoDBAdapter)DataSourceContainer.findDS(editDsName);
+//		int serialNo = ds.getSerialNo();
+//		DataSourceContainer.getDsMetadata().remove(ds);
+//		if(DataSourceContainer.findDS(dsDetailsJson.getString("name")) != null){
+//			throw new BDAException(BDAConstants.DS_ALREADY_EXISTS + " :" + dsDetailsJson.getString("name"));
+//		}else{
+//			DataSourceContainer.saveMongoDBDataSource(dsDetailsJson,serialNo);
+//		}
+//		
+//		
+//	}
 	
 //	public static void editNoSQLDataSource(JSONObject dsDetailsJson) throws Exception {
 //				

@@ -108,7 +108,7 @@ angular.module('bdaApp')
 	$scope.aggregateMethods = ["sum","avg","min","max","count","none"];
 	$scope.aggregate = [];
 	$scope.usedTables = [];
-	$scope.noOfRecords = "10";
+	$scope.noOfRecords = "24";
 	$scope.orderBy = "x-axis";
 
 
@@ -172,7 +172,6 @@ angular.module('bdaApp')
 					$scope.tableData = JSON.parse(response.output);
 					console.log($scope.tableData);
 					$scope.typesSelected($('.chartTypesImage tr td .active').attr('id'));
-					window.dispatchEvent(new Event('resize'));
 				}else{
 					$scope.errorIndicator = "true";
 					$scope.error_Message = response.output;
@@ -181,6 +180,7 @@ angular.module('bdaApp')
 				alert("Unexpected Error");
 			});
 		}, 50);
+		window.dispatchEvent(new Event('resize'));
 		$scope.stats = "chart";
 		window.dispatchEvent(new Event('resize'));
 	}

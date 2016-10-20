@@ -20,11 +20,11 @@ public class BDAConstants {
 
 	public static final String DASH_ALREADY_EXISTS = "Dashboard Already Exists";
 
-	public static final String DASHBOARDS_FILE_PATH = "/Users/naveen/Naveen_Bajaj/containers/dashboard.ser";
-	//public static final String DASHBOARDS_FILE_PATH = "/home/ec2-user/naveen_bajaj/bda/dashboard.ser";
+	//public static final String DASHBOARDS_FILE_PATH = "/Users/naveen/Naveen_Bajaj/containers/dashboard.ser";
+	public static final String DASHBOARDS_FILE_PATH = "/home/ec2-user/naveen_bajaj/bda/dashboard.ser";
 	
-	public static final String DATASOURCE_FILE_PATH = "/Users/naveen/Naveen_Bajaj/containers/datasource.ser";
-	//public static final String DATASOURCE_FILE_PATH = "/home/ec2-user/naveen_bajaj/bda/datasource.ser";
+	//public static final String DATASOURCE_FILE_PATH = "/Users/naveen/Naveen_Bajaj/containers/datasource.ser";
+	public static final String DATASOURCE_FILE_PATH = "/home/ec2-user/naveen_bajaj/bda/datasource.ser";
 	
 	public static final String CHARTS_FILE_PATH = "/Users/naveen/Naveen_Bajaj/containers/chart.ser";;
 

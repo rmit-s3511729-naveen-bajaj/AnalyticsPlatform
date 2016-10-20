@@ -93,7 +93,7 @@ public class DatasourceController {
 
 	}
 	
-	@RequestMapping(value = "/editHiveDS/{editDsName}", method = RequestMethod.POST)
+	@RequestMapping(value = "/editDistributedDS/{editDsName}", method = RequestMethod.POST)
 	public String editHiveDS(@PathVariable String editDsName, @RequestBody String dsDetails) {
 		
 		try{
