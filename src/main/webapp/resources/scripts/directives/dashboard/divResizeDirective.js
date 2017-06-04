@@ -27,7 +27,7 @@ angular.module('bdaApp').directive('resizable', function ($http) {
         		then(function(response) {
         		
 					if(response.data.status == "&success&"){
-						if(chart.chartParams.chartType == "geo"){
+						if(chart.chartType == "geo"){
 							$("[id='"+chart.chartName+"']").find('#geo_div').empty();
 							
 							$("[id='"+chart.chartName+"']").find('#geo_div').height($(elem).height()-30);

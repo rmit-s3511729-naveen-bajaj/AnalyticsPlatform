@@ -4,9 +4,9 @@
 		<div class="col-lg-12">
 			<h3 class="page-header">
 				<a ui-sref="app.chart" href="">Charts</a> > addChart <a
-					class="btn btn-success pull-right" ng-click="plotChart()"> <i
-					class="fa fa-save append-icon"></i> Plot
-				</a><a class="btn btn-success pull-right" ng-click="addToDashboard()">
+					class="btn btn-success pull-right" ng-click="saveChart()"> <i
+					class="fa fa-save append-icon"></i> Save
+				</a><a class="btn btn-info pull-right" style="margin-right: 5px" ng-click="addToDashboard()">
 					<i class="fa fa-save append-icon"></i> Add to dashboard
 				</a>
 
@@ -19,13 +19,13 @@
 					<label class="col-sm-2">Chart Name:</label>
 					<div class="col-sm-4">
 						<input type="text" class="form-control"
-							placeholder="Enter Chart Name" ng-model="addChart.name">
+							placeholder="Enter Chart Name" ng-model="addChart.chartName">
 					</div>
 
 					<label class="col-sm-2">DataSource Name:</label>
 					<div class="col-sm-4">
-						<select class="form-control column" ng-model="addChart.dsName"
-							ng-change="updateTables(addChart.dsName)">
+						<select class="form-control column" ng-model="addChart.datasourceName"
+							ng-change="updateTables(addChart.datasourceName)">
 							<option selected value="">Select datasources</option>
 							<option ng-repeat="item in allDatasources" value="{{item.name}}">{{item.name}}</option>
 						</select>
@@ -71,22 +71,22 @@
 									<span>Types</span>
 									<table class="chartTypesImage">
 										<tr>
-											<td><img class="active"
-												ng-click="typesSelected('discretebar')"
+											<td><img 
+												ng-click="setChartType('discretebar')"
 												src="resources/images/charts/xyaxis_bar.JPG"
 												id="discretebar"></td>
-											<td><img ng-click="typesSelected('horizontalbar')"
+											<td><img ng-click="setChartType('horizontalbar')"
 												src="resources/images/charts/horizontalbar.JPG"
 												id="horizontalbar"></td>
 										</tr>
 										<tr>
-											<td><img ng-click="typesSelected('multiline')"
+											<td><img ng-click="setChartType('multiline')"
 												src="resources/images/charts/multiline.JPG" id="multiline"></td>
-											<td><img ng-click="typesSelected('pie')"
-												src="resources/images/charts/pie.JPG" id="pie"></td>
+											<td><img ng-click="setChartType('pie')"
+												src="resources/images/charts/pie5.JPG" id="pie"></td>
 										</tr>
 										<tr>
-											<td><img ng-click="typesSelected('donut')"
+											<td><img ng-click="setChartType('donut')"
 												src="resources/images/charts/donut.JPG" id="donut"></td>
 
 										</tr>

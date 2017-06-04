@@ -141,7 +141,7 @@ angular
                 	        }
                 	    }).state('app.chart',{
                 		   templateUrl:'resources/views/charts/home.html',
-                		   url:'/charts',
+                		   url:'/chart',
                 		   controller:'ChartCtrl',
                 		   resolve: {
                 			   loadMyFiles: function ($ocLazyLoad) {

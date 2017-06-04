@@ -43,7 +43,7 @@ angular.module('bdaApp')
 		$state.go('app.editChart');	
 	}
 
-	if(angular.isDefined($scope.editChartName)){
+	if(angular.isDefined($scope.editChartName)){	
 		var queryJson = {}
 		queryJson["dashboardName"]="dashboard1";
 		queryJson["chartName"]=$scope.editChartName;
@@ -51,9 +51,43 @@ angular.module('bdaApp')
 		var query = JSON.stringify(queryJson);
 		$http.get("/AnalyticsPlatform/services/getChartObject/" +  query)
 		.success(function(response) {
-			//console.log(response);
+			console.log(response.output);
 			$scope.editChart = JSON.parse(response.output);
-			$scope.updateTables($scope.editChart.datasourceName)
+			$scope.updateTables($scope.editChart.datasourceName);
+			$scope.editGetColumns($scope.editChart.tableName);
+			$('#'+$scope.editChart.tableName).addClass('in');
+			$scope.dimensions = $scope.editChart.dimensions;
+			$scope.expressions = $scope.editChart.expressions;
+			var cType = $scope.editChart.chartType;
+			$('.chartTypesImage tr td .active').removeClass('active');
+			$('#' + cType).addClass('active');
+			
+			var chartPromise = $timeout(function() {
+				$http.post("/AnalyticsPlatform/services/queryForChart/",$scope.editChart).
+				then(function(response) {
+					response = response.data;
+					//console.log(response);
+					if(response.status == "&success&"){
+						$scope.errorIndicator = "false";
+						$scope.tableData = JSON.parse(response.output);
+						//console.log($scope.tableData);
+						var chartOptions = getChartDetails(cType,$scope.tableData,$scope.editChart.dimensions[0],
+								$scope.editChart.expressions[0].expField,"","geo_div");
+						//console.log(chartOptions)
+						$scope.options = chartOptions.options;
+						$scope.data = chartOptions.data;
+						
+					}else{
+						$scope.errorIndicator = "true";
+						$scope.error_Message = response.output;
+					}
+				}, function(response) {
+					alert("Unexpected Error");
+				});
+			}, 50);
+			window.dispatchEvent(new Event('resize'));
+			$scope.stats = "chart";
+			window.dispatchEvent(new Event('resize'));
 		});
 	}
 
@@ -61,7 +95,7 @@ angular.module('bdaApp')
 	$scope.updateTables = function(dsName){
 		$http.get("/AnalyticsPlatform/api/getTables/" +  dsName)
 		.success(function(response) {
-			console.log(response);
+			//console.log(response);
 			for(var i in response){
 				$scope.tableColumns[i] = {};
 				$scope.tableColumns[i].title = response[i];
@@ -74,7 +108,7 @@ angular.module('bdaApp')
 	$scope.editGetColumns = function(tableName){
 		$http.get("/AnalyticsPlatform/services/getColumns/" + $scope.editChart.datasourceName + "/" + tableName )
 		.success(function(response) {
-			console.log(response.output)
+			//console.log(response.output)
 			for(var i in $scope.tableColumns){
 				if($scope.tableColumns[i].title == tableName){
 					$scope.tableColumns[i].columns = JSON.parse(response.output);
@@ -85,12 +119,13 @@ angular.module('bdaApp')
 		);
 	}
 	// on select of table -- get column names
-	$scope.getColumns = function(tableName){
-		$http.get("/AnalyticsPlatform/services/getColumns/" + $scope.addChart.dsName + "/" + tableName )
+	$scope.getColumns = function(tName){
+		$scope.addChart.tableName = tName;
+		$http.get("/AnalyticsPlatform/services/getColumns/" + $scope.addChart.datasourceName + "/" + tName )
 		.success(function(response) {
-			console.log(response.output)
+			//console.log(response.output)
 			for(var i in $scope.tableColumns){
-				if($scope.tableColumns[i].title == tableName){
+				if($scope.tableColumns[i].title == tName){
 					$scope.tableColumns[i].columns = JSON.parse(response.output);
 				}
 			}
@@ -114,7 +149,7 @@ angular.module('bdaApp')
 
 
 	$scope.onDragStart = function(item){
-		console.log(item);
+		//console.log(item);
 	}
 
 	$scope.onYDropComplete=function(data,evt){
@@ -129,49 +164,29 @@ angular.module('bdaApp')
 	function replaceAll(find, replace, str) {
 		return str.replace(new RegExp(find, 'g'), replace);
 	}
-
-	$scope.plotChart = function(){
-		$scope.xAxisLabel = $("[id='"+$scope.dimensions[0]+"']").val();
-		$scope.yAxisLabel = $("[id='"+$scope.expressions[0].expField+"']").val();
-		$scope.zAxisLabel = $("[id='"+$scope.dimensions[1]+"']").val();
-		$scope.chartType = $('.chartTypesImage').find('.active').attr('id');
-
-		var postJson = {};
-		postJson["dashboardName"] = "dashboard1";
-		postJson["dsName"] = $scope.addChart.dsName;
-		postJson["chartName"] = $scope.addChart.name;
-		postJson["query"] = checkValue($('#querypane').val());
-		postJson["xAxis"] = checkValue($scope.dimensions[0]);
-		postJson["xAxisLabel"] = checkValue($("[id='"+$scope.dimensions[0]+"']").val());
-		postJson["yAxis"] = checkValue($scope.expressions[0].expField);
-		postJson["yAxisLabel"] = checkValue($("[id='"+$scope.expressions[0].expField+"']").val());
-		postJson["zAxis"] = checkValue($scope.dimensions[1]);
-		postJson["zAxisLabel"] = checkValue($("[id='"+$scope.dimensions[1]+"']").val());
-		postJson["aggregateFn"] = checkValue($scope.expressions[0].aggregate);
-		postJson["chartType"] = $('.chartTypesImage').find('.active').attr('id');
-		postJson["chartAxisType"] = $('.chartImage').find('.active').attr('id');
-		postJson["noOfRecords"] = checkValue($scope.noOfRecords);
-		var orderColumn = $scope.orderBy;
-		if(orderColumn == "x-axis")
-			postJson["orderBy"] = checkValue($scope.xAxisValue);
-		else if(orderColumn == "y-axis")
-			postJson["orderBy"] = checkValue($scope.yAxisValue);
-		else
-			postJson["orderBy"] = orderColumn;
-
-		postJson["tableNames"] = checkValue($scope.usedTables);
-
-		console.log(postJson);
+	
+	$scope.setEditChartType = function(cType){
+		$scope.editChart.dimensions = $scope.dimensions;
+		$scope.editChart.expressions = $scope.expressions;
+		$scope.editChart.chartType = cType;
+		$('.chartTypesImage tr td .active').removeClass('active');
+		$('#' + cType).addClass('active');
+		console.log($scope.editChart);
 		var chartPromise = $timeout(function() {
-			$http.post("/AnalyticsPlatform/services/queryForChart/",postJson).
+			$http.post("/AnalyticsPlatform/services/queryForChart/",$scope.editChart).
 			then(function(response) {
 				response = response.data;
-				console.log(response);
+				//console.log(response);
 				if(response.status == "&success&"){
 					$scope.errorIndicator = "false";
 					$scope.tableData = JSON.parse(response.output);
-					console.log($scope.tableData);
-					$scope.typesSelected($('.chartTypesImage tr td .active').attr('id'));
+					//console.log($scope.tableData);
+					var chartOptions = getChartDetails(cType,$scope.tableData,$scope.editChart.dimensions[0],
+							$scope.editChart.expressions[0].expField,"","geo_div");
+					//console.log(chartOptions)
+					$scope.options = chartOptions.options;
+					$scope.data = chartOptions.data;
+					
 				}else{
 					$scope.errorIndicator = "true";
 					$scope.error_Message = response.output;
@@ -184,49 +199,30 @@ angular.module('bdaApp')
 		$scope.stats = "chart";
 		window.dispatchEvent(new Event('resize'));
 	}
-
-	$scope.editPlotChart = function(){
-		$scope.xAxisLabel = $("[id='"+$scope.dimensions[0]+"']").val();
-		$scope.yAxisLabel = $("[id='"+$scope.expressions[0].expField+"']").val();
-		$scope.zAxisLabel = $("[id='"+$scope.dimensions[1]+"']").val();
-		$scope.chartType = $('.chartTypesImage').find('.active').attr('id');
-
-		var postJson = {};
-		postJson["dashboardName"] = "dashboard1";
-		postJson["dsName"] = $scope.editChart.datasourceName;
-		postJson["chartName"] = $scope.editChart.chartName;
-		postJson["query"] = checkValue($('#querypane').val());
-		postJson["xAxis"] = checkValue($scope.dimensions[0]);
-		postJson["xAxisLabel"] = checkValue($("[id='"+$scope.dimensions[0]+"']").val());
-		postJson["yAxis"] = checkValue($scope.expressions[0].expField);
-		postJson["yAxisLabel"] = checkValue($("[id='"+$scope.expressions[0].expField+"']").val());
-		postJson["zAxis"] = checkValue($scope.dimensions[1]);
-		postJson["zAxisLabel"] = checkValue($("[id='"+$scope.dimensions[1]+"']").val());
-		postJson["aggregateFn"] = checkValue($scope.expressions[0].aggregate);
-		postJson["chartType"] = $('.chartTypesImage').find('.active').attr('id');
-		postJson["chartAxisType"] = $('.chartImage').find('.active').attr('id');
-		postJson["noOfRecords"] = checkValue($scope.noOfRecords);
-		var orderColumn = $scope.orderBy;
-		if(orderColumn == "x-axis")
-			postJson["orderBy"] = checkValue($scope.xAxisValue);
-		else if(orderColumn == "y-axis")
-			postJson["orderBy"] = checkValue($scope.yAxisValue);
-		else
-			postJson["orderBy"] = orderColumn;
-
-		postJson["tableNames"] = checkValue($scope.usedTables);
-
-		console.log(postJson)
+	
+	$scope.setChartType = function(cType){
+		//$scope.addChart.dashboardName = "dashboard1";
+		$scope.addChart.dimensions = $scope.dimensions;
+		$scope.addChart.expressions = $scope.expressions;
+		$scope.addChart.chartType = cType;
+		$('.chartTypesImage tr td .active').removeClass('active');
+		$('#' + cType).addClass('active');
+		
 		var chartPromise = $timeout(function() {
-			$http.post("/AnalyticsPlatform/services/queryForChart/",postJson).
+			$http.post("/AnalyticsPlatform/services/queryForChart/",$scope.addChart).
 			then(function(response) {
 				response = response.data;
-				console.log(response);
+				//console.log(response);
 				if(response.status == "&success&"){
 					$scope.errorIndicator = "false";
 					$scope.tableData = JSON.parse(response.output);
-					console.log($scope.tableData);
-					$scope.typesSelected($('.chartTypesImage tr td .active').attr('id'));
+					//console.log($scope.tableData);
+					var chartOptions = getChartDetails(cType,$scope.tableData,$scope.addChart.dimensions[0],
+							$scope.addChart.expressions[0].expField,"","geo_div");
+					//console.log(chartOptions)
+					$scope.options = chartOptions.options;
+					$scope.data = chartOptions.data;
+					
 				}else{
 					$scope.errorIndicator = "true";
 					$scope.error_Message = response.output;
@@ -238,13 +234,33 @@ angular.module('bdaApp')
 		window.dispatchEvent(new Event('resize'));
 		$scope.stats = "chart";
 		window.dispatchEvent(new Event('resize'));
+	}
+	
+	$scope.saveChart = function(){
+		$http.post("/AnalyticsPlatform/services/saveChart/",$scope.addChart).
+		then(function(response) {
+			$state.go('app.chart', null, {reload: true});
+		}, function(response) {
+			alert("Unexpected Error");
+		});
+		
+	}
+	
+	$scope.updateChart = function(){
+		$http.post("/AnalyticsPlatform/services/updateChart/"+$scope.editChartName,$scope.editChart).
+		then(function(response) {
+			$state.go('app.chart', null, {reload: true});
+		}, function(response) {
+			alert("Unexpected Error");
+		});
+		
 	}
 
 	$scope.addToDashboard = function(){
-
+		$scope.saveChart();
 		var queryJson = {};
 		queryJson["dashboardName"]="dashboard1";
-		queryJson["chartName"]=$scope.addChart.name;
+		queryJson["chartName"]=$scope.addChart.chartName;
 
 		var query = JSON.stringify(queryJson);
 		$http.get("/AnalyticsPlatform/services/addChartToDashboard/" +  query)
@@ -256,7 +272,7 @@ angular.module('bdaApp')
 	}
 
 	$scope.editAddToDashboard = function(){
-
+		$scope.updateChart();
 		var queryJson = {};
 		queryJson["dashboardName"]="dashboard1";
 		queryJson["chartName"]=$scope.editChart.chartName;
@@ -276,6 +292,7 @@ angular.module('bdaApp')
 
 		$('.chartTypesImage tr td .active').removeClass('active');
 		$('#' + elementId).addClass('active');
+		//console.log($scope.tableData);
 		var chartOptions = getChartDetails(elementId,$scope.tableData,$scope.xAxisLabel,
 				$scope.yAxisLabel,$scope.zAxisLabel,"geo_div");
 

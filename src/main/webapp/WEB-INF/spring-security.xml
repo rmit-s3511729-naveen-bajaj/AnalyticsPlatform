@@ -20,6 +20,7 @@
 		<authentication-provider>
 			<user-service>
 				<user name="user1" password="pass" authorities="ROLE_SUPER" />
+				<user name="user2" password="pass" authorities="ROLE_SUPER" />
 			</user-service>
 		</authentication-provider>
 	</authentication-manager>

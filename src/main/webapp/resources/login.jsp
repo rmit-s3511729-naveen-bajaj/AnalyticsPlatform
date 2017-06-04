@@ -74,9 +74,9 @@
                         <div class="clearfix"></div>
                         <div class="separator">
 
-                            <p class="change_link">New to site?
+                           <!--  <p class="change_link">New to site?
                                 <a href="#toregister" class="to_register"> Create Account </a>
-                            </p>
+                            </p> -->
                         </div>
                     </form>
                     <!-- form -->

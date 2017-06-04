@@ -4,9 +4,9 @@
 		<div class="col-lg-12">
 			<h3 class="page-header">
 				<a ui-sref="app.chart" href="">Charts</a> > {{editChartName}} <a
-					class="btn btn-success pull-right" ng-click="editPlotChart()">
-					<i class="fa fa-save append-icon"></i> Plot
-				</a><a class="btn btn-success pull-right"
+					class="btn btn-success pull-right" ng-click="updateChart()">
+					<i class="fa fa-save append-icon"></i> Update
+				</a><a class="btn btn-info pull-right" style="margin-right: 5px" 
 					ng-click="editAddToDashboard()"> <i
 					class="fa fa-save append-icon"></i> Add to dashboard
 				</a>
@@ -42,7 +42,7 @@
 								ng-click="editGetColumns(item.title)" href=""
 								class="list-group-item" data-toggle="collapse"
 								data-target="#{{ item.title }}" data-parent="#menu">{{
-								item.title }} <span ng-hide="columns.length==0"
+								item.title }} <span ng-if="columns.length > 0"
 								class="label label-info">{{ item.columns.length }}</span>
 							</a>
 							<div id="{{ item.title }}" class="sublinks collapse">
@@ -74,22 +74,22 @@
 									<span>Types</span>
 									<table class="chartTypesImage">
 										<tr>
-											<td><img class="active"
-												ng-click="typesSelected('discretebar')"
+											<td><img 
+												ng-click="setEditChartType('discretebar')"
 												src="resources/images/charts/xyaxis_bar.JPG"
 												id="discretebar"></td>
-											<td><img ng-click="typesSelected('horizontalbar')"
+											<td><img ng-click="setEditChartType('horizontalbar')"
 												src="resources/images/charts/horizontalbar.JPG"
 												id="horizontalbar"></td>
 										</tr>
 										<tr>
-											<td><img ng-click="typesSelected('multiline')"
+											<td><img ng-click="setEditChartType('multiline')"
 												src="resources/images/charts/multiline.JPG" id="multiline"></td>
-											<td><img ng-click="typesSelected('pie')"
+											<td><img ng-click="setEditChartType('pie')"
 												src="resources/images/charts/pie.JPG" id="pie"></td>
 										</tr>
 										<tr>
-											<td><img ng-click="typesSelected('donut')"
+											<td><img ng-click="setEditChartType('donut')"
 												src="resources/images/charts/donut.JPG" id="donut"></td>
 
 										</tr>

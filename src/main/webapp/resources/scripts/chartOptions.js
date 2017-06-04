@@ -47,6 +47,10 @@ function analyse2Ddata(data,x,y){
 
 function getBarOptions(title,xLabel,yLabel,xColName,yColName,data,height){
 	var analyzedResult = analyse2Ddata(data,xColName,yColName);
+	console.log(xColName);
+	console.log(yColName);
+	console.log(xLabel);
+	console.log(yLabel);
 	if(title ==  null){
 		enableTitle = false;
 		title="";
@@ -56,7 +60,7 @@ function getBarOptions(title,xLabel,yLabel,xColName,yColName,data,height){
 	var options =  {
 			chart: {
 				type: 'discreteBarChart',
-				height:height,
+				height:400,
 				margin : {
 					top: 20,
 					right: 20,
@@ -78,7 +82,7 @@ function getBarOptions(title,xLabel,yLabel,xColName,yColName,data,height){
 				},
 				yAxis: {
 					axisLabel: yLabel,
-					axisLabelDistance: -10
+					axisLabelDistance: -20
 				}
 			}, "title": {
 				"enable": enableTitle,
@@ -374,7 +378,7 @@ function get3DOptions(chartType,title,xLabel,yLabel,zLabel,xColName,yColName,zCo
 	});
 
 	var data = chartData;
-	console.log(JSON.stringify(data));
+	//console.log(JSON.stringify(data));
 	return {
 		"options":options,
 		"data":data
@@ -383,7 +387,7 @@ function get3DOptions(chartType,title,xLabel,yLabel,zLabel,xColName,yColName,zCo
 
 function getChartDetails(cType,tableData,xLabel,yLabel,zLabel,chartdivid){
 	var chartType = "";	
-console.log(tableData);
+	//console.log(tableData);
 	if((tableData[0].hasOwnProperty("series") && Object.keys(tableData[0]).length >3)
 			|| (!tableData[0].hasOwnProperty("series") && Object.keys(tableData[0]).length>=3)){
 		switch(cType){

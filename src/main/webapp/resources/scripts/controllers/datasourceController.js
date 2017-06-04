@@ -21,7 +21,7 @@ angular.module('bdaApp')
 	if(angular.isDefined($scope.editDatasourceName)){
 		$http.get('/AnalyticsPlatform/api/datasources/' + $scope.editDatasourceName)
 		.success(function(response) {
-			console.log(response);
+			//console.log(response);
 			$scope.editDatasourceDetails=response;
 		});
 	}
@@ -29,7 +29,7 @@ angular.module('bdaApp')
 	$scope.allDatasources=[];
 	$http.get('/AnalyticsPlatform/api/datasources/')
 	.success(function(response) {
-		console.log(response.output);
+		//console.log(response.output);
 		$scope.allDatasources=JSON.parse(response.output);
 	});
 	
@@ -81,6 +81,8 @@ angular.module('bdaApp')
 		else if($scope.editDatasourceDetails.type == "Distributed"){
 			editDatasourceUrl = '/AnalyticsPlatform/api/editDistributedDS/' + $scope.editDatasourceName;
 		}
+		
+		console.log($scope.editDatasourceDetails);
 		$http.post(editDatasourceUrl, $scope.editDatasourceDetails, {
 			headers : {
 				"content-type" : "application/json"

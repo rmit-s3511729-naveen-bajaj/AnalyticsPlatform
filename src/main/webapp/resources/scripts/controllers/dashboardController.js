@@ -23,13 +23,13 @@ angular.module('bdaApp')
 						if (response.status == "&success&") {
 							var output = JSON
 							.parse((response.output));
-							console.log(output);
+							//console.log(output);
 							$scope.dashboards = output.dashList;
 
 							$scope.active_dash_name = JSON
 							.parse(output.dashDetails).dashboardName;
 
-							console.log("dashname--"+$scope.active_dash_name);
+							//console.log("dashname--"+$scope.active_dash_name);
 
 //							if (dashBoardName == "&DASH_FIRST&")
 //								location.href = location.href
@@ -38,7 +38,7 @@ angular.module('bdaApp')
 
 							$scope.chartObjects = JSON
 							.parse(output.dashDetails).charts;
-							console.log($scope.chartObjects)
+							//console.log($scope.chartObjects)
 							var chartNames = [];
 							var usedColors = [];
 
@@ -79,7 +79,7 @@ angular.module('bdaApp')
 	
 	$scope.exportToExcel = function(chart){
 		var chartName = chart.chartName;
-		console.log('exportable_'+chartName);
+		//console.log('exportable_'+chartName);
 		
 //		alert("123");
 //		 $scope.exportData = function () {
@@ -98,22 +98,22 @@ angular.module('bdaApp')
 		queryJson["dashboardName"] = "dashboard1";
 		queryJson["dsName"] = chart.datasourceName;
 		queryJson["chartName"] = chart.chartName;
-		queryJson["query"] = chart.chartParams.query;
+		queryJson["query"] = chart.query;
 		var chartPromise = $timeout(function() {
 
 			$http
-			.post("/AnalyticsPlatform/services/queryForChart/", queryJson)
+			.post("/AnalyticsPlatform/services/queryForChart/", chart)
 			.then(
 					function(response) {
 						$timeout.cancel(chartPromise);
 						console.log(response.data);
 						
 						var chartOptions = getChartDetails(
-								chart.chartParams.chartType,
+								chart.chartType,
 								JSON.parse(response.data.output),
-								chart.chartParams.xAxisLabel,
-								chart.chartParams.yAxisLabel,
-								chart.chartParams.zAxisLabel,chart.chartName);
+								chart.dimensions[0],
+								chart.expressions[0].expField,
+								"",chart.chartName);
 						chart["options"] = chartOptions.options;
 						chart["data"] = chartOptions.data;
 						chart["tableData"] = JSON.parse(response.data.output);
@@ -122,7 +122,7 @@ angular.module('bdaApp')
 						chart["numPerPage"] = 5;
 						chart["currentPage"] = 1;
 						chart["tablePageRecords"] = [];
-						if(chart.chartParams.chartType != 'geo')
+						if(chart.chartType != 'geo')
 							applyDispatchFunction(chart["options"],chart);
 					});
 	    }, 20);
@@ -167,7 +167,7 @@ angular.module('bdaApp')
 
 
 		}
-		if(chart.chartParams.chartType == "geo"){
+		if(chart.chartType == "geo"){
 			$("[id='"+chart.chartName+"']").find('#geo_div').empty();
 			
 			getGeoOptions(chart.chartName,chart.chartParams.xAxisLabel,chart.chartParams.yAxisLabel,chart.chartParams.xAxis,chart.chartParams.yAxis,chart.tableData,chart.chartName);
