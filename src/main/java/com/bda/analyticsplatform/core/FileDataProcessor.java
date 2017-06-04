@@ -14,6 +14,7 @@ import java.util.Set;
 
 import javax.validation.metadata.ReturnValueDescriptor;
 
+import com.bda.analyticsplatform.models.Chart;
 import com.bda.analyticsplatform.models.ChartParams;
 import com.bda.analyticsplatform.models.Criteria;
 import com.bda.analyticsplatform.models.FileDSObject;
@@ -25,7 +26,7 @@ import flexjson.JSONSerializer;
 
 public class FileDataProcessor {
 
-	public static String getChartData(ChartParams params,FileDSObject object) throws Exception{
+	public static String getChartData(Chart chart,FileDSObject object) throws Exception{
 			
 		Map<String,Map<String,Double>> data = new LinkedHashMap<String,Map<String,Double>>();
 		Map<String,Double> data2D = new LinkedHashMap<String,Double>();
@@ -35,13 +36,20 @@ public class FileDataProcessor {
 		record = object.readRecord(reader);
 		
 		
+		String x_axis = chart.getDimensions().get(0);
+		String y_axis = chart.getExpressions().get(0).get("expField");
+		String y_axis_agg_fn = chart.getExpressions().get(0).get("aggregate");
+		String z_axis = null;
+		if(chart.getDimensions().size() > 1){
+			z_axis = chart.getDimensions().get(1);
+		}
 		
-		if(params.getzAxis().equalsIgnoreCase(BDAConstants.NULL_INDICATOR)){
+		if(z_axis == null){
 			int flag = 0;
 			while (record!=null) {
 				
 				flag=0;
-				for(Criteria criteria : params.getFilterConditions()){
+				for(Criteria criteria : chart.getFilterConditions()){
 					
 					if(!(object.getField(criteria.left, record).equalsIgnoreCase(criteria.right.toString()))){
 						record = object.readRecord(reader);
@@ -64,17 +72,17 @@ public class FileDataProcessor {
 					}
 				}
 				
-				String xValue = object.getField(params.getxAxis(), record);
-				String yValue = object.getField(params.getyAxis(), record);
+				String xValue = object.getField(x_axis, record);
+				String yValue = object.getField(y_axis, record);
 				if(data2D.get(xValue)!=null){
 					
 				
 					
 				
-				if(!params.getAggregateFn().equalsIgnoreCase("avg"))
+				if(!y_axis_agg_fn.equalsIgnoreCase("avg"))
 					data2D.put(xValue,getExpressionValue( 
 						data2D.get(xValue) ,
-						yValue,params.getAggregateFn()));
+						yValue,y_axis_agg_fn));
 				else{
 					if(ApplicationUtils.isDouble(yValue)){
 					data2D.put(xValue, 
@@ -88,10 +96,10 @@ public class FileDataProcessor {
 					}
 				}
 				}else{
-					if(!params.getAggregateFn().equals("avg"))
+					if(!y_axis_agg_fn.equals("avg"))
 						data2D.put(xValue,getExpressionValue( 
 							null ,
-							yValue,params.getAggregateFn()));
+							yValue,y_axis_agg_fn));
 					else{
 						if(ApplicationUtils.isDouble(yValue)){
 						data2D.put(xValue, 
@@ -107,17 +115,17 @@ public class FileDataProcessor {
 			}
 			List<Map<String,Object>> output = new ArrayList<Map<String,Object>>();
 			Set<Entry<String,Double>> value = data2D.entrySet();
-			Integer limit = Integer.parseInt(params.getNoOfRecords().trim());
+			Integer limit = Integer.parseInt(chart.getNoOfRecords().trim());
 			Integer recs = 0;
 			for (Entry<String, Double> entry : value) {
 				
 				Map<String,Object> finalRecord = new LinkedHashMap<String,Object>();
-				finalRecord.put(params.getxAxisLabel(), entry.getKey());
-				if(params.getAggregateFn().equals("avg")){
+				finalRecord.put(x_axis, entry.getKey());
+				if(y_axis_agg_fn.equals("avg")){
 					System.out.println(data2D_avg_count);
-					finalRecord.put(params.getyAxisLabel(), entry.getValue()/data2D_avg_count.get(entry.getKey()));
+					finalRecord.put(x_axis, entry.getValue()/data2D_avg_count.get(entry.getKey()));
 				}else{
-					finalRecord.put(params.getyAxisLabel(), entry.getValue());
+					finalRecord.put(y_axis, entry.getValue());
 				}
 				output.add(finalRecord);
 				if(recs++ == limit-1)
@@ -128,17 +136,17 @@ public class FileDataProcessor {
 			return s.serialize(output);
 		}else{
 			while (record!=null) {
-				String xValue = object.getField(params.getxAxis(), record);
-				String zValue = object.getField(params.getzAxis(), record);
-				String yValue = object.getField(params.getyAxis(), record);
+				String xValue = object.getField(x_axis, record);
+				String zValue = object.getField(z_axis, record);
+				String yValue = object.getField(y_axis, record);
 				if(data.get(zValue)!=null){
 					data2D = data.get(zValue);
 					if(data2D.get(xValue)!=null){
 
-						if(params.getAggregateFn() != "avg")
+						if(y_axis_agg_fn != "avg")
 							data2D.put(zValue,getExpressionValue( 
 								data2D.get(xValue) ,
-								yValue,params.getAggregateFn()));
+								yValue,y_axis_agg_fn));
 						else{
 							if(!ApplicationUtils.isDouble(yValue)){
 							data2D.put(zValue, 
@@ -160,10 +168,10 @@ public class FileDataProcessor {
 					data2D = new HashMap<String,Double>();
 					data2D_avg_count = new HashMap<String,Double>();
 
-					if(params.getAggregateFn() != "avg")
+					if(y_axis_agg_fn != "avg")
 						data2D.put(xValue,getExpressionValue( 
 							null ,
-							yValue,params.getAggregateFn()));
+							yValue,y_axis_agg_fn));
 					else{
 						if(!ApplicationUtils.isDouble(yValue)){
 						data2D.put(xValue, 
@@ -187,7 +195,7 @@ public class FileDataProcessor {
 			}
 			List<Map<String,Object>> output = new ArrayList<Map<String,Object>>();
 			Set<Entry<String,Map<String,Double>>> value = data.entrySet();
-			Integer limit = Integer.parseInt(params.getNoOfRecords().trim());
+			Integer limit = Integer.parseInt(chart.getNoOfRecords().trim());
 			Integer recs = 0;
 			for (Entry<String, Map<String, Double>> entry : value) {
 				
@@ -195,12 +203,12 @@ public class FileDataProcessor {
 				for (Entry<String, Double> entry2 : output2D) {
 					if(!entry2.getKey().endsWith("_avg_count")){
 					Map<String,Object> finalRecord = new HashMap<String,Object>();
-					finalRecord.put(params.getzAxisLabel(), entry.getKey());
-					finalRecord.put(params.getxAxisLabel(), entry2.getKey());
-					if(params.getAggregateFn().equals("avg")){
-						finalRecord.put(params.getyAxisLabel(), entry2.getValue()/entry.getValue().get(entry2.getKey()+"_avg_count"));
+					finalRecord.put(z_axis, entry.getKey());
+					finalRecord.put(x_axis, entry2.getKey());
+					if(y_axis_agg_fn.equals("avg")){
+						finalRecord.put(y_axis, entry2.getValue()/entry.getValue().get(entry2.getKey()+"_avg_count"));
 					}else{
-						finalRecord.put(params.getyAxisLabel(), entry2.getValue());
+						finalRecord.put(y_axis, entry2.getValue());
 					}
 					output.add(finalRecord);
 					}

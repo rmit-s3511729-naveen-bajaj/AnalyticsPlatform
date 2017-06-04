@@ -1,7 +1,5 @@
 package com.bda.analyticsplatform.impl;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -15,7 +13,6 @@ import com.bda.analyticsplatform.core.hive.HiveAdaptor;
 import com.bda.analyticsplatform.core.nosql.MongoDBAdapter;
 import com.bda.analyticsplatform.core.rdbms.queryGenerators.MySQLQueryGenerator;
 import com.bda.analyticsplatform.models.Chart;
-import com.bda.analyticsplatform.models.ChartParams;
 import com.bda.analyticsplatform.models.Criteria;
 import com.bda.analyticsplatform.models.DSObject;
 import com.bda.analyticsplatform.models.DashBoard;
@@ -26,8 +23,11 @@ import com.bda.analyticsplatform.models.RDBMSDBObject;
 import com.bda.analyticsplatform.utils.ApplicationUtils;
 import com.bda.analyticsplatform.utils.BDAConstants;
 import com.bda.analyticsplatform.utils.BDAException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ServiceControllerImpl {
+	
+	static ObjectMapper mapper = new ObjectMapper();
 
 	public static JSONObject getDashboardDetails(String dashboardName) throws BDAException, Exception {
 
@@ -132,7 +132,6 @@ public class ServiceControllerImpl {
 	}
 
 	public static String getChartObject(String chartJson) {
-		System.out.println(chartJson);
 		JSONObject chartObj = new JSONObject(chartJson);
 
 		return DashBoardContainer.findDashboard(chartObj.getString("dashboardName"))
@@ -166,44 +165,68 @@ public class ServiceControllerImpl {
 		}
 
 	}
+	
+	public static String saveChart(String chartDetails) throws Exception {
+		Chart chart = mapper.readValue(chartDetails, Chart.class);
+		if(DashBoardContainer.findDashboard("dashboard1")
+				.findChart(chart.getChartName()) == null){
+					DashBoardContainer.saveChartDetails(chart);
+					return BDAConstants.SUCCESS_INTEGRATION;
+				}
+		else{
+			throw new BDAException("chart already exists.");
+		}
+	}
+	
+	public static String updateChart(String oldChartName, String chartDetails) throws Exception {
+		Chart chart = mapper.readValue(chartDetails, Chart.class);
+		DashBoard dashboard = DashBoardContainer.findDashboard("dashboard1");
+		dashboard.getCharts().remove(dashboard.findChart(oldChartName));
+		DashBoardContainer.saveChartDetails(chart);
+		return BDAConstants.SUCCESS_INTEGRATION;
+				
+	}
+
 
 	public static String queryForChart(String chartDetails) throws Exception {
-		JSONObject chartDetailsJson = new JSONObject(chartDetails);
-		System.out.println(DashBoardContainer.getDashboards());
-		System.out.println("dsname---"+chartDetailsJson.getString("dsName"));
-		DashBoard dashBoard = DashBoardContainer.findDashboard(chartDetailsJson.getString("dashboardName"));
-		System.out.println("dash----"+dashBoard);
-		System.out.println(chartDetailsJson);
-		if(DashBoardContainer.findDashboard("dashboard1")
-		.findChart(chartDetailsJson.getString("chartName")) == null){
-			DashBoardContainer.saveChartDetails(chartDetailsJson, null);
-		}
+		//JSONObject chartDetailsJson = new JSONObject(chartDetails);
 		
-		Chart chart = dashBoard.findChart(chartDetailsJson.getString("chartName"));
+		Chart chart = mapper.readValue(chartDetails, Chart.class);
+		//System.out.println(DashBoardContainer.getDashboards());
+		//System.out.println("dsname---"+chartDetailsJson.getString("dsName"));
+		//DashBoard dashBoard = DashBoardContainer.findDashboard(chartDetailsJson.getString("dashboardName"));
+		//System.out.println("dash----"+dashBoard);
+		//System.out.println(chartDetailsJson);
+//		if(DashBoardContainer.findDashboard("dashboard1")
+//		.findChart(chart.getChartName()) == null){
+//			DashBoardContainer.saveChartDetails(chart);
+//		}
+		
+		//Chart chart = dashBoard.findChart(chartDetailsJson.getString("name"));
 //		Chart chart = new Chart();
 //		chart.setChartName(chartDetailsJson.getString("chartName"));
-		chart.setDatasourceName(chartDetailsJson.getString("dsName"));
-		ChartParams chartParams = chart.getChartParams();
-		if (chartDetailsJson.has("xAxis")) {
-			for (int i = 0; i < chartDetailsJson.getJSONArray("tableNames").length(); i++) {
-
-				chart.setTableColumns(new HashMap<String, Map<String,String>>());
-				chart.getTableColumns().put(chartDetailsJson.getJSONArray("tableNames").getString(i),
-						new LinkedHashMap<String,String>());
-			}
-			chartParams.setAggregateFn(chartDetailsJson.getString("aggregateFn"));
-			chartParams.setNoOfRecords(chartDetailsJson.getString("noOfRecords"));
-			chartParams.setOrderBy(chartDetailsJson.getString("orderBy"));
-			chartParams.setQuery(chartDetailsJson.getString("query"));
-			chartParams.setxAxis(chartDetailsJson.getString("xAxis"));
-			chartParams.setxAxisLabel(chartDetailsJson.getString("xAxisLabel"));
-			chartParams.setyAxis(chartDetailsJson.getString("yAxis"));
-			chartParams.setyAxisLabel(chartDetailsJson.getString("yAxisLabel"));
-			chartParams.setzAxis(chartDetailsJson.getString("zAxis"));
-			chartParams.setzAxisLabel(chartDetailsJson.getString("zAxisLabel"));
-			chartParams.setChartType(chartDetailsJson.getString("chartType"));
-			//chartParams.setChartAxisType(chartDetailsJson.getString("chartAxisType"));
-		}
+		//chart.setDatasourceName(chartDetailsJson.getString("datasourceName"));
+		//ChartParams chartParams = chart.getChartParams();
+//		if (chart.getDimensions().get(0) != null) {
+//			for (int i = 0; i < chartDetailsJson.getJSONArray("tableNames").length(); i++) {
+//
+//				chart.setTableColumns(new HashMap<String, Map<String,String>>());
+//				chart.getTableColumns().put(chartDetailsJson.getJSONArray("tableNames").getString(i),
+//						new LinkedHashMap<String,String>());
+//			}
+//			chartParams.setAggregateFn(chartDetailsJson.getString("aggregateFn"));
+//			chartParams.setNoOfRecords(chartDetailsJson.getString("noOfRecords"));
+//			chartParams.setOrderBy(chartDetailsJson.getString("orderBy"));
+//			chartParams.setQuery(chartDetailsJson.getString("query"));
+//			chartParams.setxAxis(chartDetailsJson.getString("xAxis"));
+//			chartParams.setxAxisLabel(chartDetailsJson.getString("xAxisLabel"));
+//			chartParams.setyAxis(chartDetailsJson.getString("yAxis"));
+//			chartParams.setyAxisLabel(chartDetailsJson.getString("yAxisLabel"));
+//			chartParams.setzAxis(chartDetailsJson.getString("zAxis"));
+//			chartParams.setzAxisLabel(chartDetailsJson.getString("zAxisLabel"));
+//			chartParams.setChartType(chartDetailsJson.getString("chartType"));
+//			//chartParams.setChartAxisType(chartDetailsJson.getString("chartAxisType"));
+//		}
 		return getData(chart);
 	}
 
@@ -216,22 +239,23 @@ public class ServiceControllerImpl {
 			if (ds.getSubType().equalsIgnoreCase("mysql")) {
 				query = new MySQLQueryGenerator().generateQuery(chart);
 			}
-
+			chart.setQuery(query.getQueryString());
 			return ds.queryForChart(query);
 		} else if (obj instanceof FileDSObject) {
 			FileDSObject ds = (FileDSObject) obj;
-			return FileDataProcessor.getChartData(chart.getChartParams(), ds);
+			return FileDataProcessor.getChartData(chart, ds);
 		}
 		else if(obj instanceof MongoDBAdapter){
 			MongoDBAdapter ds = (MongoDBAdapter) obj;
 			for(Entry<String,Map<String,String>> table : chart.getTableColumns().entrySet()){
-				return ds.getChartData(table.getKey(),chart.getChartParams());
+				return ds.getChartData(table.getKey(),chart);
 			}
 
 		}else if(obj instanceof HiveAdaptor){
 			HiveAdaptor ds = (HiveAdaptor) obj;
 			if (ds.getSubType().equalsIgnoreCase("hive")) {
 				query = new MySQLQueryGenerator().generateQuery(chart);
+				chart.setQuery(query.getQueryString());
 			}
 			return ds.queryForChart(query);
 		}
@@ -252,6 +276,7 @@ public class ServiceControllerImpl {
 		JSONObject chartDetailsJson = new JSONObject(chartJson);
 		DashBoard dashBoard = DashBoardContainer.findDashboard(chartDetailsJson.getString("dashboardName"));
 		Chart chart = dashBoard.findChart(chartDetailsJson.getString("chartName"));
+		
 		if (chartDetailsJson.has("type") && chartDetailsJson.getString("type").equalsIgnoreCase("remove")) {
 			chart.setDashboardIndicator(false);
 		} else {
@@ -302,7 +327,7 @@ public class ServiceControllerImpl {
 					if(criteriaString.length == 2){
 						for(String fil : criteriaString[1].split(",")){
 							Criteria filter = new Criteria(criteriaString[0],opr, fil);
-							chart.getChartParams().getFilterConditions().add(filter);
+							chart.getFilterConditions().add(filter);
 						}
 						break;
 					}
@@ -313,18 +338,17 @@ public class ServiceControllerImpl {
 		}
 		else{
 
-			String filterColumn = dashboard.findChart(chartDetailsJson.getString("filterChartName")).getChartParams()
-					.getxAxis();
+			String filterColumn = dashboard.findChart(chartDetailsJson.getString("filterChartName")).getDimensions().get(0);
 
 			Object filterValue = chartDetailsJson.get("filterValue");
 
 			Criteria filter = new Criteria(filterColumn, Criteria.EQUALS, filterValue);
 
-			chart.getChartParams().getFilterConditions().add(filter);
+			chart.getFilterConditions().add(filter);
 
 		}
 		String data = getData(chart);
-		chart.getChartParams().getFilterConditions().clear();
+		chart.getFilterConditions().clear();
 		return data;
 
 	}
@@ -333,7 +357,7 @@ public class ServiceControllerImpl {
 		JSONObject chartDetailsJson = new JSONObject(chartJson);
 		DashBoard dashboard = DashBoardContainer.findDashboard(chartDetailsJson.getString("dashBoardName"));
 		Chart chart = dashboard.findChart(chartDetailsJson.getString("chartName"));
-		chart.getChartParams().setChartAxisType(chartDetailsJson.getString("chartAxis"));
+		//chart.getChartParams().setChartAxisType(chartDetailsJson.getString("chartAxis"));
 		ApplicationUtils.updateContainerObjects();
 	}
 
@@ -341,7 +365,7 @@ public class ServiceControllerImpl {
 		JSONObject chartDetailsJson = new JSONObject(chartJson);
 		DashBoard dashboard = DashBoardContainer.findDashboard(chartDetailsJson.getString("dashBoardName"));
 		Chart chart = dashboard.findChart(chartDetailsJson.getString("chartName"));
-		chart.getChartParams().setChartType(chartDetailsJson.getString("chartType"));
+		//chart.getChartParams().setChartType(chartDetailsJson.getString("chartType"));
 		ApplicationUtils.updateContainerObjects();
 
 	}

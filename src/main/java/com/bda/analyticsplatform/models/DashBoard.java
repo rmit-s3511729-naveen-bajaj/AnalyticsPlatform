@@ -64,14 +64,11 @@ public class DashBoard implements Serializable{
 	public Chart findChart(String chartName) {
 		for (Chart chart : charts) {
 			if(chart.getChartName().equalsIgnoreCase(chartName)){
-				
-				System.out.println("chart----= "+chart);
 				return chart;
 			}
 		}
 		return null;
 	}
-	
 	
 }
 

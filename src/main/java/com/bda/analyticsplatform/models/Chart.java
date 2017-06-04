@@ -1,7 +1,9 @@
 package com.bda.analyticsplatform.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -16,6 +18,17 @@ public class Chart implements Serializable{
 	
 	private String datasourceName;
 	
+	private String tableName;
+	
+	//x-axis
+	private List<String> dimensions; 
+	//y-axis <name, agg fn>
+	private List<Map<String,String>> expressions; 
+	
+	private String chartType;
+	
+	private String query;
+	
 	private Map<String,Map<String,String>> tableColumns ;
 	
 	private int chartHeight;
@@ -24,13 +37,17 @@ public class Chart implements Serializable{
 	
 	private Boolean dashboardIndicator;
 	
-	private ChartParams chartParams;
+	private List<Criteria> filterConditions;
+	private String noOfRecords;
+	private String chartHeaderColor;
 	
 	public Chart(){
-		chartParams = new ChartParams();
+		dimensions = new ArrayList<>();
+		expressions = new ArrayList<Map<String,String>>();
+		filterConditions = new ArrayList<>();
 		setTableColumns(new HashMap<String,Map<String,String>>());
 		chartHeight = 400;
-		chartWidth = 40;
+		chartWidth = 400;
 		dashboardIndicator = false;
 	}
 
@@ -57,14 +74,6 @@ public class Chart implements Serializable{
 
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
-	}
-
-	public ChartParams getChartParams() {
-		return chartParams;
-	}
-
-	public void setChartParams(ChartParams chartParams) {
-		this.chartParams = chartParams;
 	}
 
 	public int getChartHeight() {
@@ -105,5 +114,68 @@ public class Chart implements Serializable{
 		this.tableColumns = tableColumns;
 	}
 
+	public String getTableName() {
+		return tableName;
+	}
+
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
+	public List<String> getDimensions() {
+		return dimensions;
+	}
+
+	public void setDimensions(List<String> dimensions) {
+		this.dimensions = dimensions;
+	}
+
+	public String getChartType() {
+		return chartType;
+	}
+
+	public void setChartType(String chartType) {
+		this.chartType = chartType;
+	}
+
+	public String getQuery() {
+		return query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
+	public List<Map<String,String>> getExpressions() {
+		return expressions;
+	}
+
+	public void setExpressions(List<Map<String,String>> expressions) {
+		this.expressions = expressions;
+	}
+
+	public List<Criteria> getFilterConditions() {
+		return filterConditions;
+	}
+
+	public void setFilterConditions(List<Criteria> filterConditions) {
+		this.filterConditions = filterConditions;
+	}
+
+	public String getNoOfRecords() {
+		return noOfRecords;
+	}
+
+	public void setNoOfRecords(String noOfRecords) {
+		this.noOfRecords = noOfRecords;
+	}
+
+	public String getChartHeaderColor() {
+		return chartHeaderColor;
+	}
+
+	public void setChartHeaderColor(String chartHeaderColor) {
+		this.chartHeaderColor = chartHeaderColor;
+	}
 
 }

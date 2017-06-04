@@ -374,6 +374,40 @@ public class ServiceController {
 
 	}
 	
+	@RequestMapping(value = "/saveChart", method = RequestMethod.POST)
+	public String saveChart(@RequestBody String chartDetails) {
+		
+		try{
+			String response = ServiceControllerImpl.saveChart(chartDetails);
+			
+			return ApplicationUtils.getSuccessObject(response);
+		
+		}catch(BDAException e){
+			return ApplicationUtils.getFailureObject(e.getMessage());
+		}catch(Exception e){
+			e.printStackTrace();
+			return ApplicationUtils.getFailureObject(e.getMessage());
+		}
+
+	}
+	
+	@RequestMapping(value = "/updateChart/{oldChartName}", method = RequestMethod.POST)
+	public String updateChart(@PathVariable String oldChartName, @RequestBody String chartDetails) {
+		
+		try{
+			String response = ServiceControllerImpl.updateChart(oldChartName,chartDetails);
+			
+			return ApplicationUtils.getSuccessObject(response);
+		
+		}catch(BDAException e){
+			return ApplicationUtils.getFailureObject(e.getMessage());
+		}catch(Exception e){
+			e.printStackTrace();
+			return ApplicationUtils.getFailureObject(e.getMessage());
+		}
+
+	}
+	
 	/*
 	 * This method edits the chart dimensions
 	 */

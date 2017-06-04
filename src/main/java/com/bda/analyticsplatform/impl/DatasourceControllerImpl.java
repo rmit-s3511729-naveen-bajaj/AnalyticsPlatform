@@ -52,7 +52,7 @@ public class DatasourceControllerImpl {
 
 		public static void editRDBMSDataSource(String editDsName, String dsDetails) throws BDAException, Exception {
 		JSONObject dsDetailsJson = new JSONObject(dsDetails);
-		if (dsDetailsJson.getString("dbType").equalsIgnoreCase("RDBMS"))
+		if (dsDetailsJson.getString("type").equalsIgnoreCase("RDBMS"))
 			DataSourceContainer.editRDBMSDataSource(editDsName, dsDetailsJson);
 //		else if (dsDetailsJson.getString("dbType").equalsIgnoreCase("NoSql"))
 //			DataSourceContainer.editNoSqlDataSource(dsDetailsJson);

@@ -11,6 +11,7 @@ import java.util.Set;
 import org.json.JSONObject;
 import org.json.simple.JSONArray;
 
+import com.bda.analyticsplatform.models.Chart;
 import com.bda.analyticsplatform.models.ChartParams;
 import com.bda.analyticsplatform.models.Criteria;
 import com.bda.analyticsplatform.models.DSObject;
@@ -244,23 +245,37 @@ public class MongoDBAdapter extends DSObject implements Serializable {
 		return queryOutput;
 	}
 
-	public String getChartData(String collectionName, ChartParams chartParams) {
+	public String getChartData(String collectionName, Chart chart) {
+		String x_axis = chart.getDimensions().get(0);
+		String y_axis = chart.getExpressions().get(0).get("expField");
+		String y_axis_agg_fn = chart.getExpressions().get(0).get("aggregate");
+		String z_axis = null;
+		if(chart.getDimensions().size() > 1){
+			z_axis = chart.getDimensions().get(1);
+		}
+		String y1_axis = null;
+		String y1_axis_agg_fn = null;
+		
+		if(chart.getExpressions().size() > 1){
+			y1_axis = chart.getExpressions().get(1).get("expField");
+			y1_axis_agg_fn = chart.getExpressions().get(1).get("aggregate");
+		}
+		
 		List<String> dimensions = new ArrayList<String>();
-		dimensions.add(chartParams.getxAxisLabel() + "##" + chartParams.getxAxis());
-		if (chartParams.getzAxis() != null && !chartParams.getzAxis().equalsIgnoreCase(BDAConstants.NULL_INDICATOR))
-			dimensions.add(chartParams.getzAxisLabel() + "##" + chartParams.getzAxis());
+		dimensions.add(x_axis + "##" + x_axis);
+		if (z_axis != null)
+			dimensions.add(x_axis + "##" + x_axis);
 
 		List<String> expressions = new ArrayList<String>();
 
-		expressions
-		.add(chartParams.getyAxisLabel() + "##" + chartParams.getAggregateFn() + "##" + chartParams.getyAxis());
-		if (chartParams.getY1Axis() != null && !chartParams.getY1Axis().equalsIgnoreCase(BDAConstants.NULL_INDICATOR))
-			expressions.add(chartParams.getyAxisLabel() + "##" + chartParams.getY1Axis() + "##"
-					+ chartParams.getAggregateFnY1());
+		expressions.add(y_axis + "##" + y_axis_agg_fn + "##" + y_axis);
+		if (y1_axis != null)
+			expressions.add(y1_axis + "##" + y1_axis_agg_fn + "##"
+					+ y1_axis);
 
 		JSONSerializer s = new JSONSerializer();
 
-		return s.serialize(aggregateFn(collectionName, dimensions, expressions, chartParams.getFilterConditions()));
+		return s.serialize(aggregateFn(collectionName, dimensions, expressions, chart.getFilterConditions()));
 
 	}
 

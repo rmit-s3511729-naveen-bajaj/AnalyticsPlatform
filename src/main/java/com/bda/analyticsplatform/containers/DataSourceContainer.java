@@ -1,7 +1,6 @@
 package com.bda.analyticsplatform.containers;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,19 +10,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.bda.analyticsplatform.core.hive.HiveAdaptor;
 import com.bda.analyticsplatform.core.nosql.DynamoDBAdapter;
 import com.bda.analyticsplatform.core.nosql.MongoDBAdapter;
@@ -33,11 +26,9 @@ import com.bda.analyticsplatform.models.DashBoard;
 import com.bda.analyticsplatform.models.DelimiterFileDSObject;
 import com.bda.analyticsplatform.models.ExcelFileDSObject;
 import com.bda.analyticsplatform.models.FileDSObject;
-import com.bda.analyticsplatform.models.NoSqlDSObject;
 import com.bda.analyticsplatform.models.RDBMSDBObject;
 import com.bda.analyticsplatform.utils.BDAConstants;
 import com.bda.analyticsplatform.utils.BDAException;
-import com.bda.analyticsplatform.utils.PropertiesFileReader;
 
 @SuppressWarnings("unchecked")
 public class DataSourceContainer implements Serializable {
@@ -65,9 +56,9 @@ public class DataSourceContainer implements Serializable {
 					//dsMetadata.remove(i);
 					//dsMetadata.add(i, outObject);
 				}
-				else if(dsObject instanceof DynamoDBAdapter){
-					((DynamoDBAdapter) dsObject).connect();
-				}
+//				else if(dsObject instanceof DynamoDBAdapter){
+//					((DynamoDBAdapter) dsObject).connect();
+//				}
 				else if(dsObject instanceof MongoDBAdapter){
 					((MongoDBAdapter) dsObject).connect();
 				}
@@ -194,8 +185,8 @@ public class DataSourceContainer implements Serializable {
 		RDBMSDBObject ds = (RDBMSDBObject)DataSourceContainer.findDS(editDsName);
 		int serialNo = ds.getSerialNo();
 		DataSourceContainer.getDsMetadata().remove(ds);
-		if(DataSourceContainer.findDS(dsDetailsJson.getString("dsName")) != null){
-			throw new BDAException(BDAConstants.DS_ALREADY_EXISTS + " :" + dsDetailsJson.getString("dsName"));
+		if(DataSourceContainer.findDS(dsDetailsJson.getString("name")) != null){
+			throw new BDAException(BDAConstants.DS_ALREADY_EXISTS + " :" + dsDetailsJson.getString("name"));
 		}else{
 			DataSourceContainer.saveRDBMSDataSource(dsDetailsJson,serialNo);
 		}

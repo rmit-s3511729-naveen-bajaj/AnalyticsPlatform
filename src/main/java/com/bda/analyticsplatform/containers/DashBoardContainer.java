@@ -150,6 +150,35 @@ public class DashBoardContainer {
 
 	}
 	
+	public static void saveChartDetails(Chart chart) throws Exception {
+
+		DashBoard dashBoard = DashBoardContainer.findDashboard("dashboard1");
+
+		DSObject ds = DataSourceContainer.findDS(chart.getDatasourceName());
+		System.out.println(ds.getType());
+		//Chart chart = new Chart();
+		//chart.setChartName(chartDetailsJson.getString("chartName"));
+//		if(serialNo == null)
+//			chart.setSerialNo(dashBoard.getCharts().size() + 1);
+//		else
+//			chart.setSerialNo(serialNo);
+		if(ds.getType().equalsIgnoreCase("RDBMS")){
+		
+			RDBMSDBObject rdbmsdbObject = (RDBMSDBObject) ds;
+
+		}
+		else if(ds.getType().equalsIgnoreCase("FILE")){
+			FileDSObject fileDSObject = (FileDSObject) ds;
+		}
+		else if(ds.getType().equalsIgnoreCase("NoSQL")){
+			MongoDBAdapter mongoDSObject = (MongoDBAdapter) ds;
+		}
+		//chart.setDatasourceName(chartDetailsJson.getString("dsName"));
+		dashBoard.getCharts().add(chart);
+
+		DashBoardContainer.updateDashboardsToFile();
+	}
+	
 	public static void saveChartDetails(JSONObject chartDetailsJson, Integer serialNo) throws Exception {
 
 		DashBoard dashBoard = DashBoardContainer.findDashboard(chartDetailsJson.getString("dashboardName"));
